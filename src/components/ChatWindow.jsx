@@ -35,9 +35,9 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Limit file size for P2P demo (500KB for Base64 efficiency)
-    if (file.size > 500000) {
-      alert("For secure P2P speed, please limit attachments to 500KB (PDFs/Images).");
+    // Limit file size for P2P demo (5MB to allow small videos)
+    if (file.size > 5000000) {
+      alert("Attachment too large. Please limit to 5MB for P2P sharing.");
       return;
     }
 
@@ -118,6 +118,8 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall }) => {
                    <div className="attachment-preview">
                      {msg.fileType?.startsWith('image/') ? (
                         <img src={msg.fileData} alt="attachment" className="img-attachment" />
+                     ) : msg.fileType?.startsWith('video/') ? (
+                        <video src={msg.fileData} controls className="img-attachment" />
                      ) : (
                         <div className="file-attachment">
                            <FileText size={24} />

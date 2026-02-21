@@ -109,7 +109,8 @@ function App() {
             time: new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isSystem: msg.isSystem,
             fileData: msg.fileData,
-            fileName: msg.fileName
+            fileName: msg.fileName,
+            fileType: msg.fileType
           }].sort((a,b) => a.id - b.id) };
         });
       });
@@ -122,7 +123,7 @@ function App() {
     const roomID = `carelinq_v4_${participants[0].replace(/[@.]/g, '_')}_${participants[1].replace(/[@.]/g, '_')}`;
     const targetSafeEmail = activeChat.email.replace(/[@.]/g, '_');
 
-    const payload = { senderEmail: currentUser.email, text, timestamp: Date.now(), isSystem, fileData: file?.data, fileName: file?.name };
+    const payload = { senderEmail: currentUser.email, text, timestamp: Date.now(), isSystem, fileData: file?.data, fileName: file?.name, fileType: file?.type };
     
     // Save to the conversation
     gun.get(roomID).set(payload);
