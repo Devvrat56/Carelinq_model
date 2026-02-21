@@ -10,7 +10,10 @@ import Gun from 'gun';
 import emailjs from '@emailjs/browser';
 import './App.css';
 
-// REAL-TIME ENGINE: Using multiple peers for global reliability
+// For Simple-Peer compatibility in Vite
+window.global = window;
+window.process = { env: {} };
+
 const gun = Gun({
   peers: [
     'https://gun-manhattan.herokuapp.com/gun',
@@ -18,6 +21,8 @@ const gun = Gun({
     'https://gun-us.herokuapp.com/gun'
   ]
 });
+
+const APP_VERSION = "P2P-WebRTC-v1.0.4";
 
 const INITIAL_CHATS = [
   { id: 'carelinq_support', name: 'CareLinq Support', lastMsg: 'Your real-time clinic is active.', time: 'System', avatar: 'https://i.pravatar.cc/150?u=carelinq', email: 'support@carelinq.com' },
@@ -193,7 +198,7 @@ function App() {
       <div className="user-status-bar med-status">
         <div className="status-item">
           <Stethoscope size={16} color="var(--med-primary)" />
-          <span>CareLinq Doctor: <strong>{currentUser.email}</strong></span>
+          <span>CareLinq Doctor: <strong>{currentUser.email}</strong> <small>({APP_VERSION})</small></span>
           <button className="logout-btn" onClick={() => setCurrentUser(null)}>Restart Session</button>
         </div>
       </div>
