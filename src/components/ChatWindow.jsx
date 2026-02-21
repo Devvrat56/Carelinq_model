@@ -120,6 +120,10 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall }) => {
                         <img src={msg.fileData} alt="attachment" className="img-attachment" />
                      ) : msg.fileType?.startsWith('video/') ? (
                         <video src={msg.fileData} controls className="img-attachment" />
+                     ) : msg.fileType?.startsWith('audio/') ? (
+                        <div className="audio-attachment">
+                           <audio src={msg.fileData} controls className="audio-player" />
+                        </div>
                      ) : (
                         <div className="file-attachment">
                            <FileText size={24} />
