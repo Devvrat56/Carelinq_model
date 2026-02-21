@@ -120,15 +120,15 @@ function App() {
   const handleStartCall = (type) => {
     if (!activeChat) return;
     const participants = [currentUser.email, activeChat.email].sort();
-    const roomName = `medilink_v3_${participants[0].replace(/[@.]/g, '_')}_${participants[1].replace(/[@.]/g, '_')}`;
+    const roomName = `${participants[0].replace(/[@.]/g, '_')}_${participants[1].replace(/[@.]/g, '_')}`;
     const targetSafeEmail = activeChat.email.replace(/[@.]/g, '_');
 
     // 1. Send Signal (for the popup)
     gun.get(`medilink_signal_${targetSafeEmail}`).put({ fromEmail: currentUser.email, fromName: currentUser.name, type, roomID: roomName, timestamp: Date.now() });
 
     // 2. Automated Message In Chat
-    const meetingLink = `https://meet.ffmuc.net/${roomName}`;
-    onSendMessage(activeChat.id, `🚑 Urgent: Consultation invitation sent. Join here: ${meetingLink}`, true);
+    const meetingLink = `https://8x8.vc/${roomName}`;
+    onSendMessage(activeChat.id, `🚑 Urgent: Consultation invitation. Join here: ${meetingLink}`, true);
 
     // 3. Option to send via REAL EMAIL (mailto)
     const emailSubject = `Medical Consultation Invitation - ${currentUser.name}`;
