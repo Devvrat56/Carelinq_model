@@ -10,9 +10,7 @@ import Gun from 'gun';
 import emailjs from '@emailjs/browser';
 import './App.css';
 
-// For Simple-Peer compatibility in Vite
-window.global = window;
-window.process = { env: {} };
+// Gun.js Configuration
 
 const gun = Gun({
   peers: [
@@ -22,7 +20,7 @@ const gun = Gun({
   ]
 });
 
-const APP_VERSION = "P2P-WebRTC-v1.0.4";
+const APP_VERSION = "P2P-WebRTC-v1.0.5";
 
 const INITIAL_CHATS = [
   { id: 'carelinq_support', name: 'CareLinq Support', lastMsg: 'Your real-time clinic is active.', time: 'System', avatar: 'https://i.pravatar.cc/150?u=carelinq', email: 'support@carelinq.com' },
