@@ -5,15 +5,16 @@ import ChatWindow from './components/ChatWindow';
 import VideoCall from './components/VideoCall';
 import Login from './components/Login';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Globe, Phone, X, Check, Stethoscope } from 'lucide-react';
+import { Globe, Phone, X, Check, Stethoscope, FileText } from 'lucide-react';
 import Gun from 'gun';
 import './App.css';
 
-// Initialize Gun with public relay peers for real-time sync across computers
+// Initialize Gun with public relay peers
+// Using specialized relay nodes to ensure cross-network connectivity
 const gun = Gun({
   peers: [
     'https://gun-manhattan.herokuapp.com/gun',
-    'https://gun-relay.us-east-1.linodeobjects.com/gun'
+    'https://relay.peer.ooo/gun'
   ]
 });
 
@@ -36,28 +37,41 @@ function App() {
   const [messages, setMessages] = useState({});
   const [isCalling, setIsCalling] = useState(false);
   const [callType, setCallType] = useState(null);
+  const [incomingCall, setIncomingCall] = useState(null);
 
-  // Sync Chats with LocalStorage
+  // Sync state with localStorage
   useEffect(() => {
     if (currentUser) localStorage.setItem('medichat_user', JSON.stringify(currentUser));
     localStorage.setItem('medichat_chats', JSON.stringify(chats));
   }, [currentUser, chats]);
 
-  // REAL-TIME SYNC: Listen for messages in Gun
+  // REAL-TIME ENGINE: Listen for everything (Messages & Call Signals)
   useEffect(() => {
     if (!currentUser) return;
 
+    // Listen for call signals specifically FOR ME
+    const mySignalID = `medilink_signal_${currentUser.email.replace(/[@.]/g, '_')}`;
+    gun.get(mySignalID).on((data) => {
+      if (data && data.fromEmail && data.type && (Date.now() - data.timestamp < 10000)) {
+        // If the signal is fresh (less than 10s old), show the popup
+        setIncomingCall({
+          name: data.fromName || data.fromEmail.split('@')[0],
+          email: data.fromEmail,
+          type: data.type,
+          roomID: data.roomID
+        });
+      }
+    });
+
     // Listen for messages for EACH chat in our list
     chats.forEach(chat => {
-      // Shared Room ID is a combination of both emails (sorted)
       const participants = [currentUser.email, chat.email].sort();
       const roomID = `medilink_room_${participants[0].replace(/[@.]/g, '_')}_${participants[1].replace(/[@.]/g, '_')}`;
 
       gun.get(roomID).map().on((data, id) => {
-        if (data && data.text) {
+        if (data && (data.text || data.fileData)) {
           setMessages(prev => {
             const roomMsgs = prev[chat.id] || [];
-            // Check if message already exists (by Gun ID)
             if (roomMsgs.find(m => m.gunId === id)) return prev;
             
             const newMsg = {
@@ -65,22 +79,19 @@ function App() {
               gunId: id,
               sender: data.senderEmail === currentUser.email ? 'me' : 'them',
               text: data.text,
+              fileData: data.fileData,
+              fileName: data.fileName,
+              fileType: data.fileType,
               time: new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               isSystem: data.isSystem
             };
             
-            return {
-              ...prev,
-              [chat.id]: [...roomMsgs, newMsg].sort((a, b) => a.id - b.id)
-            };
+            const updated = [...roomMsgs, newMsg].sort((a, b) => a.id - b.id);
+            return { ...prev, [chat.id]: updated };
           });
         }
       });
     });
-
-    return () => {
-      // In a more complex app, we'd unsubscribe here
-    };
   }, [currentUser, chats.length]);
 
   const handleLogin = (email) => {
@@ -105,7 +116,7 @@ function App() {
     const newChat = {
       id: id,
       name: email.split('@')[0],
-      lastMsg: 'Initiated medical consultation',
+      lastMsg: 'New Patient Connection',
       time: 'New',
       avatar: `https://i.pravatar.cc/150?u=${id}`,
       email: email
@@ -114,7 +125,7 @@ function App() {
     setActiveChat(newChat);
   };
 
-  const onSendMessage = (chatId, text, isSystem = false) => {
+  const onSendMessage = (chatId, text, isSystem = false, fileObj = null) => {
     if (!activeChat) return;
 
     const participants = [currentUser.email, activeChat.email].sort();
@@ -124,29 +135,52 @@ function App() {
       senderEmail: currentUser.email,
       text: text,
       timestamp: Date.now(),
-      isSystem: isSystem
+      isSystem: isSystem,
+      fileData: fileObj?.data, // Base64 string
+      fileName: fileObj?.name,
+      fileType: fileObj?.type
     };
 
-    // Save to Gun (Real-time Peer-to-Peer sync)
     gun.get(roomID).set(msgData);
 
-    // Update last message preview locally
     setChats(prev => prev.map(c => 
-      c.id === chatId ? { ...c, lastMsg: text, time: 'Now' } : c
+      c.id === chatId ? { ...c, lastMsg: fileObj ? `📄 ${fileObj.name}` : text, time: 'Now' } : c
     ));
   };
 
   const handleStartCall = (type) => {
     if (!activeChat) return;
-    const meetingMessage = `🚨 Telehealth ${type} session started.`;
+
+    // 1. SIGNAL the other user
+    const targetSignalID = `medilink_signal_${activeChat.email.replace(/[@.]/g, '_')}`;
+    gun.get(targetSignalID).put({
+      fromEmail: currentUser.email,
+      fromName: currentUser.name,
+      type: type,
+      timestamp: Date.now()
+    });
+
+    // 2. Post record to chat
+    const meetingMessage = `🚑 ${type === 'video' ? 'Video' : 'Audio'} consultation request sent.`;
     onSendMessage(activeChat.id, meetingMessage, true);
+    
     setCallType(type);
     setIsCalling(true);
   };
 
-  const handleEndCall = () => {
-    setIsCalling(false);
-    setCallType(null);
+  const handleAcceptCall = () => {
+    if (!incomingCall) return;
+    // Set active chat to the caller so the room IDs match
+    const matchingChat = chats.find(c => c.email === incomingCall.email) || {
+        id: incomingCall.email.replace(/[@.]/g, '_'),
+        name: incomingCall.name,
+        email: incomingCall.email,
+        avatar: `https://i.pravatar.cc/150?u=${incomingCall.email.replace(/[@.]/g, '_')}`
+    };
+    setActiveChat(matchingChat);
+    setCallType(incomingCall.type);
+    setIsCalling(true);
+    setIncomingCall(null);
   };
 
   if (!currentUser) {
@@ -158,8 +192,8 @@ function App() {
       <div className="user-status-bar med-status">
         <div className="status-item">
           <Stethoscope size={16} color="var(--med-primary)" />
-          <span><strong>Medical Hub</strong>: {currentUser.email}</span>
-          <button className="logout-link" onClick={handleLogout}>Switch User</button>
+          <span><strong>Doctor Identity</strong>: {currentUser.email}</span>
+          <button className="logout-link" onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
@@ -174,17 +208,41 @@ function App() {
         <ChatWindow 
           chat={activeChat} 
           messages={activeChat ? (messages[activeChat.id] || []) : []}
-          onSendMessage={(text) => onSendMessage(activeChat.id, text)}
+          onSendMessage={(text, isSystem, file) => onSendMessage(activeChat.id, text, isSystem, file)}
           onStartCall={handleStartCall} 
         />
       </div>
+
+      {/* Real-time Incoming Call Notification */}
+      <AnimatePresence>
+        {incomingCall && !isCalling && (
+          <motion.div 
+            className="call-notification"
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 20, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+          >
+            <div className="notif-content">
+              <div className="notif-icon"><Phone className="pulse-icon" /></div>
+              <div className="notif-text">
+                <strong>{incomingCall.name}</strong>
+                <span>Incoming Medical {incomingCall.type} Consult...</span>
+              </div>
+              <div className="notif-actions">
+                <button className="accept-btn" onClick={handleAcceptCall}><Check size={20} /></button>
+                <button className="decline-btn" onClick={() => setIncomingCall(null)}><X size={20} /></button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {isCalling && (
           <VideoCall 
             chat={activeChat} 
             currentUser={currentUser}
-            onEndCall={handleEndCall}
+            onEndCall={() => setIsCalling(false)}
           />
         )}
       </AnimatePresence>
