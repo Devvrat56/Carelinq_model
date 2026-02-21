@@ -1,0 +1,246 @@
+.chat-window {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-window);
+    position: relative;
+}
+
+.chat-window.empty {
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-main);
+    text-align: center;
+}
+
+.empty-icon-circle {
+    width: 100px;
+    height: 100px;
+    background-color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.chat-header {
+    height: 64px;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-container-sm {
+    position: relative;
+    width: 36px;
+    height: 36px;
+}
+
+.avatar-sm {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.chat-header-info h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.status {
+    font-size: 11px;
+    color: var(--med-primary);
+    font-weight: 600;
+}
+
+.chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.med-action-btn {
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+}
+
+.med-action-btn:hover {
+    background-color: var(--bg-main);
+    color: var(--med-primary);
+}
+
+.med-action-btn.primary {
+    background-color: var(--med-primary);
+    color: white;
+}
+
+.med-action-btn.primary:hover {
+    background-color: var(--primary-hover);
+    color: white;
+}
+
+.divider {
+    width: 1px;
+    height: 24px;
+    background-color: var(--border-color);
+    margin: 0 4px;
+}
+
+.messages-area {
+    flex-grow: 1;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: #f1f5f9;
+}
+
+.no-messages {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}
+
+.secure-badge {
+    background-color: #dcfce7;
+    color: #166534;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.message-wrapper {
+    display: flex;
+    max-width: 85%;
+}
+
+.message-wrapper.me {
+    align-self: flex-end;
+}
+
+.message-wrapper.them {
+    align-self: flex-start;
+}
+
+.message-bubble {
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+
+.me .message-bubble {
+    background-color: var(--med-primary);
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+.them .message-bubble {
+    background-color: white;
+    color: var(--text-main);
+    border-bottom-left-radius: 2px;
+}
+
+.msg-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    gap: 8px;
+}
+
+.msg-time {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+.read-receipt {
+    font-size: 10px;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.message-wrapper.system {
+    align-self: center;
+    max-width: 80%;
+}
+
+.message-wrapper.system .message-bubble {
+    background-color: #fef3c7;
+    color: #92400e;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: none;
+    border: 1px solid #fde68a;
+}
+
+.chat-input-area {
+    padding: 16px 20px;
+    background-color: white;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.input-container {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.input-container textarea {
+    flex-grow: 1;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    font-size: 14px;
+    min-height: 48px;
+    max-height: 150px;
+    outline: none;
+    resize: none;
+}
+
+.input-container textarea:focus {
+    border-color: var(--med-primary);
+}
+
+.send-btn.medical {
+    background-color: var(--med-primary);
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.send-btn.medical:disabled {
+    background-color: var(--border-color);
+    cursor: not-allowed;
+}

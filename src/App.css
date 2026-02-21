@@ -1,0 +1,159 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-main);
+  overflow: hidden;
+  position: relative;
+}
+
+.main-content {
+  display: flex;
+  flex-grow: 1;
+  height: 100%;
+}
+
+.user-status-bar.med-status {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--white);
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 13px;
+  z-index: 1000;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-main);
+}
+
+.logout-link {
+  color: #ef4444;
+  /* Alert/Red for logout */
+  font-weight: 700;
+  cursor: pointer;
+  padding-left: 12px;
+  border-left: 1.5px solid var(--border-color);
+  background: none;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.logout-link:hover {
+  text-decoration: underline;
+  color: #b91c1c;
+}
+
+.medical-theme .sidebar {
+  background-color: var(--bg-sidebar);
+}
+
+.sidebar-logo {
+  padding: 24px 0;
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #1f2937;
+  margin-bottom: 20px;
+}
+
+.call-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 100%;
+  max-width: 420px;
+}
+
+.notif-content {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--med-primary);
+}
+
+.notif-icon {
+  background: var(--med-primary);
+  color: white;
+  padding: 12px;
+  border-radius: 50%;
+}
+
+.pulse-icon {
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.notif-text {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.notif-text strong {
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.notif-text span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.notif-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.notif-actions button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: transform 0.2s;
+}
+
+.notif-actions button:hover {
+  transform: scale(1.1);
+}
+
+.accept-btn {
+  background-color: #10b981;
+}
+
+.decline-btn {
+  background-color: #ef4444;
+}

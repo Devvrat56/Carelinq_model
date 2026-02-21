@@ -1,0 +1,93 @@
+:root {
+  --primary: #0d9488;
+  /* Medical Teal */
+  --primary-hover: #0f766e;
+  --bg-main: #f8fafc;
+  --bg-sidebar: #111827;
+  /* Dark medical sidebar */
+  --bg-chat-list: #ffffff;
+  --bg-window: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Medical Specific Colors */
+  --med-primary: #0d9488;
+  --med-secondary: #0ea5e9;
+  --med-accent: #f59e0b;
+  --teams-purple: var(--med-primary);
+  --teams-light-purple: #f0fdfa;
+}
+
+[data-theme='dark'] {
+  --bg-main: #1f1f1f;
+  --bg-sidebar: #2d2d2d;
+  --bg-chat-list: #252525;
+  --bg-window: #1f1f1f;
+  --text-main: #ffffff;
+  --text-muted: #adadad;
+  --border-color: #3d3d3d;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  height: 100%;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+input {
+  font-family: inherit;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
