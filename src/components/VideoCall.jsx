@@ -10,8 +10,8 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
   useEffect(() => {
     // Generate a unique room name based on the two participants
     // We sort the IDs to ensure both participants join the same room
-    const participants = [currentUser.id, chat.id].sort();
-    const roomName = `MediLink_Room_${participants[0]}_${participants[1]}`;
+    const participants = [currentUser.email, chat.email].sort();
+    const roomName = `medilink_v3_${participants[0].replace(/[@.]/g, '_')}_${participants[1].replace(/[@.]/g, '_')}`;
 
     const domain = "meet.ffmuc.net";
     const options = {
