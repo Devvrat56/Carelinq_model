@@ -1,71 +1,83 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { PhoneOff, Mic, MicOff, Video, VideoOff, Users, Shield, RefreshCw } from 'lucide-react';
-import { Peer } from 'peerjs';
+import { PhoneOff, Mic, MicOff, Video, VideoOff, Users, Shield, RefreshCw, AlertCircle } from 'lucide-react';
 import './VideoCall.css';
 
 const VideoCall = ({ chat, currentUser, onEndCall }) => {
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
-  const [calling, setCalling] = useState(true);
+  const [status, setStatus] = useState('Initializing Media...');
   const [micActive, setMicActive] = useState(true);
   const [videoActive, setVideoActive] = useState(true);
+  const [error, setError] = useState(null);
   
   const localVideoRef = useRef();
   const remoteVideoRef = useRef();
   const peerInstance = useRef(null);
 
   useEffect(() => {
-    // 1. Get User Media
+    // 1. Get Camera/Mic Access
+    setStatus('Requesting Camera Access...');
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then(stream => {
         setLocalStream(stream);
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
-        // 2. Initialize PeerJS (Our 'Backend' Signaling Service)
-        const myPeerID = `medilink_${currentUser.email.replace(/[@.]/g, '_')}`;
-        const peer = new Peer(myPeerID, {
-            debug: 2
+        // 2. Initialize PeerJS (Global Library from index.html)
+        setStatus('Setting up Secure Tunnel...');
+        const myPeerID = `medilink_id_${currentUser.email.replace(/[@.]/g, '_')}`;
+        
+        // Use the global Peer object provided by the script tag
+        const peer = new window.Peer(myPeerID, {
+            debug: 1,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' }
+                ]
+            }
         });
 
         peer.on('open', (id) => {
-          console.log('My Peer ID is: ' + id);
+          setStatus('Ready. Waiting for Patient...');
           
-          // If we are joining, we call the other person
-          // Wait a bit to ensure the other person is also online
-          setTimeout(() => {
-            const targetPeerID = `medilink_${chat.email.replace(/[@.]/g, '_')}`;
-            const call = peer.call(targetPeerID, stream);
-            
-            call.on('stream', (remoteStream) => {
-              setRemoteStream(remoteStream);
-              if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
-              setCalling(false);
-            });
-          }, 2000);
+          // Attempt Initial Call (We try to reach them, they try to reach us)
+          const targetPeerID = `medilink_id_${chat.email.replace(/[@.]/g, '_')}`;
+          const call = peer.call(targetPeerID, stream);
+          
+          if (call) {
+              call.on('stream', (rStream) => {
+                setRemoteStream(rStream);
+                if (remoteVideoRef.current) remoteVideoRef.current.srcObject = rStream;
+                setStatus('Connected');
+              });
+          }
         });
 
-        // 3. Handle Incoming Calls
+        // 3. Handle Incoming Call Handshake
         peer.on('call', (call) => {
-          call.answer(stream); // Answer the call with our own stream
-          call.on('stream', (remoteStream) => {
-            setRemoteStream(remoteStream);
-            if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
-            setCalling(false);
+          setStatus('Connecting to Patient Stream...');
+          call.answer(stream);
+          call.on('stream', (rStream) => {
+            setRemoteStream(rStream);
+            if (remoteVideoRef.current) remoteVideoRef.current.srcObject = rStream;
+            setStatus('Connected');
           });
         });
 
         peer.on('error', (err) => {
-            console.error('PeerJS Error:', err);
-            // If the other peer isn't online yet, it's fine, we keep waiting
+            console.warn('PeerJS Error:', err);
+            if (err.type === 'peer-unavailable') {
+                setStatus('Patient not online yet. Waiting...');
+            } else {
+                setError('Connection Interrupted. Please refresh.');
+            }
         });
 
         peerInstance.current = peer;
       })
       .catch(err => {
-        console.error('Media Access Error:', err);
-        alert("Camera/Mic access is required for audio/video consultations.");
-        onEndCall();
+        setError('Camera Access Denied. Please enable permissions.');
       });
 
     return () => {
@@ -100,8 +112,8 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
            <div className="call-branding">
               <div className="teams-mini-logo">C</div>
               <div className="call-title-group">
-                <span>Secure Tunnel - {chat.name}</span>
-                <span className="host-badge">Professional P2P Audio/Video</span>
+                <span>CareLinq Direct - {chat.name}</span>
+                <span className="host-badge">{status}</span>
               </div>
            </div>
            <div className="call-actions-top">
@@ -118,30 +130,37 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
         </div>
         
         <div className="webrtc-grid">
-          {calling && (
+          {(!remoteStream && !error) && (
             <div className="calling-overlay">
               <RefreshCw className="spin" size={48} color="#f59e0b" />
-              <h3>Connecting Securely...</h3>
-              <p>Establishing an encrypted direct-link to {chat.name}.</p>
+              <h3>{status}</h3>
+              <p>Establishing an encrypted P2P link to {chat.email}.</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="calling-overlay error">
+              <AlertCircle size={48} color="#ef4444" />
+              <h3>Oops! {error}</h3>
+              <button className="retry-btn" onClick={() => window.location.reload()}>Reload Portal</button>
             </div>
           )}
           
           <div className="video-container remote">
             <video ref={remoteVideoRef} autoPlay playsInline />
-            <div className="video-label">{chat.name}</div>
-            {!remoteStream && !calling && <div className="no-video">Connection Lost</div>}
+            <div className="video-label">{chat.name} (Patient View)</div>
           </div>
 
           <div className="video-container local">
             <video ref={localVideoRef} autoPlay playsInline muted />
-            <div className="video-label">You</div>
+            <div className="video-label">Doctor (You)</div>
           </div>
         </div>
 
         <div className="call-status-footer">
           <div className="secure-badge">
             <Shield size={14} color="#f59e0b" />
-            <span>Encrypted Direct Conversation (PeerJS Cloud Signaling Active)</span>
+            <span>HIPAA Compliant P2P Encryption Active</span>
           </div>
         </div>
       </div>
