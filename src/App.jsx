@@ -151,17 +151,22 @@ function App() {
   const handleStartCall = (type) => {
     if (!activeChat) return;
 
-    // 1. SIGNAL the other user
+    // Generate synchronous room name
+    const participants = [currentUser.id, activeChat.id].sort();
+    const roomName = `MediLink_Room_${participants[0]}_${participants[1]}`;
+
+    // 1. SIGNAL the other user (Triggers the Popup)
     const targetSignalID = `medilink_signal_${activeChat.email.replace(/[@.]/g, '_')}`;
     gun.get(targetSignalID).put({
       fromEmail: currentUser.email,
       fromName: currentUser.name,
       type: type,
+      roomID: roomName,
       timestamp: Date.now()
     });
 
-    // 2. Post record to chat
-    const meetingMessage = `🚑 ${type === 'video' ? 'Video' : 'Audio'} consultation request sent.`;
+    // 2. Post record to chat (Triggers a clickable message)
+    const meetingMessage = `🚑 ${type === 'video' ? 'Video' : 'Audio'} session started. Join here: https://meet.jit.si/${roomName}`;
     onSendMessage(activeChat.id, meetingMessage, true);
     
     setCallType(type);

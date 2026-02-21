@@ -130,7 +130,29 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall }) => {
                    </div>
                 )}
                 
-                <p>{msg.text}</p>
+                {/* Render Text with Link Support */}
+                <p>
+                  {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => 
+                    part.match(/^https?:\/\//) ? (
+                      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="chat-link">
+                        {part}
+                      </a>
+                    ) : part
+                  )}
+                </p>
+
+                {/* Specialized 'Join Consult' Button for Jitsi Links */}
+                {msg.isSystem && msg.text.includes('meet.jit.si') && (
+                  <button 
+                    className="join-meeting-pill"
+                    onClick={() => {
+                        const room = msg.text.split('meet.jit.si/')[1];
+                        window.open(`https://meet.jit.si/${room}`, '_blank');
+                    }}
+                  >
+                    Enter Consultation Room
+                  </button>
+                )}
                 
                 <div className="msg-meta">
                    <span className="msg-time">{msg.time}</span>

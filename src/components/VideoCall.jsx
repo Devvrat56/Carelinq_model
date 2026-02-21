@@ -11,8 +11,7 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
     // Generate a unique room name based on the two participants
     // We sort the IDs to ensure both participants join the same room
     const participants = [currentUser.id, chat.id].sort();
-    const roomHash = Math.random().toString(36).substring(7); // Extra layer of privacy
-    const roomName = `TeamsClone_${participants[0]}_${participants[1]}_${roomHash}`;
+    const roomName = `MediLink_Room_${participants[0]}_${participants[1]}`;
 
     const domain = "meet.jit.si";
     const options = {
