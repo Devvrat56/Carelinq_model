@@ -166,7 +166,7 @@ function App() {
     });
 
     // 2. Post record to chat (Triggers a clickable message)
-    const meetingMessage = `🚑 ${type === 'video' ? 'Video' : 'Audio'} session started. Join here: https://meet.jit.si/${roomName}`;
+    const meetingMessage = `🚑 ${type === 'video' ? 'Video' : 'Audio'} session started. Join here: https://meet.ffmuc.net/${roomName}`;
     onSendMessage(activeChat.id, meetingMessage, true);
     
     setCallType(type);

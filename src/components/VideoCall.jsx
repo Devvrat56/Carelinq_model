@@ -13,7 +13,7 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
     const participants = [currentUser.id, chat.id].sort();
     const roomName = `MediLink_Room_${participants[0]}_${participants[1]}`;
 
-    const domain = "meet.jit.si";
+    const domain = "meet.ffmuc.net";
     const options = {
       roomName: roomName,
       width: '100%',
