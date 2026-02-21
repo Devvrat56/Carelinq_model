@@ -77,8 +77,11 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
       <div className="call-page-container">
         <div className="custom-call-header">
            <div className="call-branding">
-              <div className="teams-mini-logo">T</div>
-              <span>Teams Meeting - {chat.name}</span>
+              <div className="teams-mini-logo">M</div>
+              <div className="call-title-group">
+                <span>Secure Console - {chat.name}</span>
+                <span className="host-badge">Lead Consultant: {currentUser.name}</span>
+              </div>
            </div>
            <div className="call-actions-top">
               <button 

@@ -33,7 +33,24 @@
     align-items: center;
     gap: 12px;
     color: white;
-    font-weight: 600;
+}
+
+.call-title-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.call-title-group span:first-child {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.host-badge {
+    font-size: 10px;
+    color: #10b981;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 800;
 }
 
 .teams-mini-logo {
