@@ -138,11 +138,10 @@ function App() {
     if (!activeChat) return;
 
     const participants = [currentUser.email, activeChat.email].sort();
-    const roomID = `carelinq_v4_${participants[0].replace(/[@.]/g, '_')}_${participants[1].replace(/[@.]/g, '_')}`;
+    const roomID = `carelinq_sig_v5_${participants[0].replace(/[@.]/g, '_')}_${participants[1].replace(/[@.]/g, '_')}`;
     const targetSafeEmail = activeChat.email.replace(/[@.]/g, '_');
-    const meetingLink = `https://8x8.vc/${roomID}`;
 
-    // 1. REAL-TIME SIGNAL (Standard)
+    // 1. SIGNAL the other user (This triggers the incoming call popup)
     gun.get(`carelinq_signal_${targetSafeEmail}`).put({ 
         fromEmail: currentUser.email, 
         fromName: currentUser.name, 
@@ -151,28 +150,15 @@ function App() {
         timestamp: Date.now() 
     });
 
-    // 2. AUTOMATIC EMAIL (Via EmailJS Service)
-    // Browsers block silent emails for privacy. We use an API to bypass this.
-    const emailParams = {
-        to_email: activeChat.email,
-        from_name: currentUser.name,
-        meeting_link: meetingLink,
-    };
-
-    // Attempting automated send (Will work if user provides a Public Key)
-    // For now, we use a clear mailto fallback that doesn't feel like a bug
-    emailjs.send('service_default', 'template_call_invite', emailParams, 'YOUR_PUBLIC_KEY')
-      .then(() => console.log('Automated Email Sent!'))
-      .catch(() => {
-          // If no key is set, we use the Direct Mailer
-          console.log('Sending via Direct Mailer...');
-          const subject = `Urgent: Join Medical Consultation - ${currentUser.name}`;
-          const body = `Hello, this is ${currentUser.name}. Join the secure call here: ${meetingLink}`;
-          window.open(`mailto:${activeChat.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
-      });
-
-    onSendMessage(activeChat.id, `🚑 Urgent Consultation Started. JOIN HERE: ${meetingLink}`, true);
+    // 2. Post a direct invite in the chat
+    const portalLink = window.location.origin;
+    onSendMessage(activeChat.id, `🚑 Secure P2P ${type} session started. Please open the CareLinq Portal to join.`, true);
     
+    // 3. Email fallback (Optional but good for notifications)
+    const subject = `Urgent: Secure P2P Consult - ${currentUser.name}`;
+    const body = `Hello, ${currentUser.name} has started a secure P2P medical consultation. Please log into your CareLinq Portal at ${portalLink} to connect safely.`;
+    window.open(`mailto:${activeChat.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+
     setCallType(type);
     setIsCalling(true);
   };
