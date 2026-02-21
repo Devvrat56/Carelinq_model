@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Stethoscope, Phone, X, Check, Bell, Mail, RefreshCw } from 'lucide-react';
 import Gun from 'gun';
 import emailjs from '@emailjs/browser';
+import { Analytics } from '@vercel/analytics/react';
 import './App.css';
 
 // Gun.js Configuration
@@ -244,6 +245,7 @@ function App() {
       <AnimatePresence>
         {isCalling && <VideoCall chat={activeChat} currentUser={currentUser} onEndCall={() => setIsCalling(false)} />}
       </AnimatePresence>
+      <Analytics />
     </div>
   );
 }
