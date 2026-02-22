@@ -1,5 +1,6 @@
 import React from 'react';
 import { 
+  Activity,
   MessageSquare, 
   Users, 
   ClipboardList, 
@@ -12,6 +13,7 @@ import './Sidebar.css';
 
 const Sidebar = ({ activeTab, onTabChange }) => {
   const mainItems = [
+    { icon: Activity, label: 'Activity', id: 'activity' },
     { icon: MessageSquare, label: 'Consults', id: 'consults' },
     { icon: Users, label: 'Patients', id: 'patients' },
     { icon: ClipboardList, label: 'Records', id: 'records' },

@@ -363,3 +363,73 @@
     transform: translateY(0);
   }
 }
+
+/* Patient Details View */
+.patient-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  text-align: left;
+  margin-top: 24px;
+}
+
+.details-card {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.details-card h3 {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.patient-info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.patient-info-row:last-child {
+  border-bottom: none;
+}
+
+.label {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.value {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.vitals-badge {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.vitals-badge.warning {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.vitals-badge.critical {
+  background: #fef2f2;
+  color: #dc2626;
+}

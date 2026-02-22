@@ -5,7 +5,7 @@ import ChatWindow from './components/ChatWindow';
 import VideoCall from './components/VideoCall';
 import Login from './components/Login';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Stethoscope, Phone, X, Check, Bell, Mail, RefreshCw } from 'lucide-react';
+import { Stethoscope, Phone, X, Check, Bell, Mail, RefreshCw, User, Thermometer, FileText, ShieldAlert, Activity } from 'lucide-react';
 import Gun from 'gun';
 import emailjs from '@emailjs/browser';
 import './App.css';
@@ -226,7 +226,87 @@ function App() {
           </>
         ) : (
           <div className="placeholder-view">
-            <div className="placeholder-content">
+            <div className="placeholder-content" style={{ maxWidth: '900px' }}>
+              {activeTab === 'activity' && (
+                <>
+                  <h2>Patient Activity & Details</h2>
+                  <p>Comprehensive overview of current patient status and medical history.</p>
+                  
+                  <div className="patient-details-grid">
+                    {/* Basic Info Card */}
+                    <div className="details-card">
+                      <h3><User size={18} /> Basic Information</h3>
+                      <div className="patient-info-row">
+                        <span className="label">Full Name</span>
+                        <span className="value">John Doe</span>
+                      </div>
+                      <div className="patient-info-row">
+                        <span className="label">Age / Gender</span>
+                        <span className="value">42 / Male</span>
+                      </div>
+                      <div className="patient-info-row">
+                        <span className="label">Blood Group</span>
+                        <span className="value">O Positive</span>
+                      </div>
+                      <div className="patient-info-row">
+                        <span className="label">Patient ID</span>
+                        <span className="value">#CL-99234</span>
+                      </div>
+                    </div>
+
+                    {/* Vitals Card */}
+                    <div className="details-card">
+                      <h3><Thermometer size={18} /> Live Vitals</h3>
+                      <div className="patient-info-row">
+                        <span className="label">Heart Rate</span>
+                        <span className="value">72 BPM <span className="vitals-badge">Normal</span></span>
+                      </div>
+                      <div className="patient-info-row">
+                        <span className="label">Blood Pressure</span>
+                        <span className="value">120/80 <span className="vitals-badge">Normal</span></span>
+                      </div>
+                      <div className="patient-info-row">
+                        <span className="label">SpO2</span>
+                        <span className="value">98% <span className="vitals-badge">Optimal</span></span>
+                      </div>
+                      <div className="patient-info-row">
+                        <span className="label">Temperature</span>
+                        <span className="value">98.6°F <span className="vitals-badge">Normal</span></span>
+                      </div>
+                    </div>
+
+                    {/* Recent Diagnosis Card */}
+                    <div className="details-card">
+                      <h3><FileText size={18} /> Recent Diagnosis</h3>
+                      <div className="patient-info-row">
+                        <span className="label">Condition</span>
+                        <span className="value">Type 2 Diabetes</span>
+                      </div>
+                      <div className="patient-info-row">
+                        <span className="label">Last Visit</span>
+                        <span className="value">Oct 15, 2025</span>
+                      </div>
+                      <div className="patient-info-row">
+                        <span className="label">Medication</span>
+                        <span className="value">Metformin 500mg</span>
+                      </div>
+                    </div>
+
+                    {/* Alerts Card */}
+                    <div className="details-card">
+                      <h3><ShieldAlert size={18} /> Critical Alerts</h3>
+                      <div className="patient-info-row">
+                        <span className="label">Allergies</span>
+                        <span className="value" style={{ color: '#ef4444' }}>Penicillin, Peanuts</span>
+                      </div>
+                      <div className="patient-info-row">
+                        <span className="label">Risk Level</span>
+                        <span className="value"><span className="vitals-badge warning">Moderate</span></span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
               {activeTab === 'patients' && (
                 <>
                   <h2>Patient Directory</h2>
