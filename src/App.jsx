@@ -227,16 +227,6 @@ function App() {
         ) : (
           <div className="placeholder-view">
             <div className="placeholder-content">
-              {activeTab === 'activity' && (
-                <>
-                  <h2>Recent Activity</h2>
-                  <p>Track your latest medical sessions and patient interactions here.</p>
-                  <div className="activity-list">
-                    <div className="activity-item">System update completed: {APP_VERSION}</div>
-                    <div className="activity-item">New patient record shared by CareLinq Support</div>
-                  </div>
-                </>
-              )}
               {activeTab === 'patients' && (
                 <>
                   <h2>Patient Directory</h2>
