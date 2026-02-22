@@ -37,6 +37,7 @@ function App() {
     return saved ? JSON.parse(saved) : INITIAL_CHATS;
   });
 
+  const [activeTab, setActiveTab] = useState('consults');
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState({});
   const [isCalling, setIsCalling] = useState(false);
@@ -202,24 +203,80 @@ function App() {
         </div>
       </div>
 
-      <Sidebar />
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="main-content">
-        <ChatList 
-          activeChat={activeChat?.id} 
-          onSelectChat={setActiveChat} 
-          chats={chats}
-          onAddCandidate={(email) => {
-            const id = email.replace(/[@.]/g, '_');
-            if (chats.find(c => c.id === id)) return;
-            setChats([{ id, name: email.split('@')[0], email, avatar: `https://i.pravatar.cc/150?u=${id}`, lastMsg: 'Consultation Created' }, ...chats]);
-          }}
-        />
-        <ChatWindow 
-          chat={activeChat} 
-          messages={activeChat ? (messages[activeChat.id] || []) : []}
-          onSendMessage={(t, s, f) => onSendMessage(activeChat.id, t, s, f)}
-          onStartCall={handleStartCall} 
-        />
+        {activeTab === 'consults' ? (
+          <>
+            <ChatList 
+              activeChat={activeChat?.id} 
+              onSelectChat={setActiveChat} 
+              chats={chats}
+              onAddCandidate={(email) => {
+                const id = email.replace(/[@.]/g, '_');
+                if (chats.find(c => c.id === id)) return;
+                setChats([{ id, name: email.split('@')[0], email, avatar: `https://i.pravatar.cc/150?u=${id}`, lastMsg: 'Consultation Created' }, ...chats]);
+              }}
+            />
+            <ChatWindow 
+              chat={activeChat} 
+              messages={activeChat ? (messages[activeChat.id] || []) : []}
+              onSendMessage={(t, s, f) => onSendMessage(activeChat.id, t, s, f)}
+              onStartCall={handleStartCall} 
+            />
+          </>
+        ) : (
+          <div className="placeholder-view">
+            <div className="placeholder-content">
+              {activeTab === 'activity' && (
+                <>
+                  <h2>Recent Activity</h2>
+                  <p>Track your latest medical sessions and patient interactions here.</p>
+                  <div className="activity-list">
+                    <div className="activity-item">System update completed: {APP_VERSION}</div>
+                    <div className="activity-item">New patient record shared by CareLinq Support</div>
+                  </div>
+                </>
+              )}
+              {activeTab === 'patients' && (
+                <>
+                  <h2>Patient Directory</h2>
+                  <p>Manage and search through your patient list.</p>
+                  <div className="search-bar-placeholder">Search Patients...</div>
+                </>
+              )}
+              {activeTab === 'records' && (
+                <>
+                  <h2>Medical Records</h2>
+                  <p>Access secure patient history and clinical notes.</p>
+                </>
+              )}
+              {activeTab === 'telehealth' && (
+                <>
+                  <h2>Telehealth Dashboard</h2>
+                  <p>Schedule and manage your upcoming video consultations.</p>
+                  <button className="start-session-btn" onClick={() => setActiveTab('consults')}>Start New Session</button>
+                </>
+              )}
+              {activeTab === 'settings' && (
+                <>
+                  <h2>Account Settings</h2>
+                  <p>Manage your profile, notifications, and security preferences.</p>
+                  <div className="settings-options">
+                    <div className="setting-row">Profile Information</div>
+                    <div className="setting-row">Privacy & Security</div>
+                    <div className="setting-row">CareLinq Subscription</div>
+                  </div>
+                </>
+              )}
+              {activeTab === 'more' && (
+                <>
+                  <h2>More Resources</h2>
+                  <p>Access additional tools and support services.</p>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>

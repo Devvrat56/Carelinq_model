@@ -11,13 +11,13 @@ import {
 } from 'lucide-react';
 import './Sidebar.css';
 
-const Sidebar = () => {
-  const items = [
-    { icon: Activity, label: 'Activity' },
-    { icon: MessageSquare, label: 'Consults', active: true },
-    { icon: Users, label: 'Patients' },
-    { icon: ClipboardList, label: 'Records' },
-    { icon: Video, label: 'Telehealth' },
+const Sidebar = ({ activeTab, onTabChange }) => {
+  const mainItems = [
+    { icon: Activity, label: 'Activity', id: 'activity' },
+    { icon: MessageSquare, label: 'Consults', id: 'consults' },
+    { icon: Users, label: 'Patients', id: 'patients' },
+    { icon: ClipboardList, label: 'Records', id: 'records' },
+    { icon: Video, label: 'Telehealth', id: 'telehealth' },
   ];
 
   return (
@@ -26,22 +26,33 @@ const Sidebar = () => {
         <div className="sidebar-logo">
            <HeartPulse size={28} color="#10b981" />
         </div>
-        {items.map((item, index) => {
+        {mainItems.map((item) => {
           const Icon = item.icon;
+          const isActive = activeTab === item.id;
           return (
-            <div key={index} className={`sidebar-item ${item.active ? 'active' : ''}`}>
+            <div 
+              key={item.id} 
+              className={`sidebar-item ${isActive ? 'active' : ''}`}
+              onClick={() => onTabChange(item.id)}
+            >
               <Icon size={22} />
               <span>{item.label}</span>
             </div>
           );
         })}
-        <div className="sidebar-item">
+        <div 
+          className={`sidebar-item ${activeTab === 'more' ? 'active' : ''}`}
+          onClick={() => onTabChange('more')}
+        >
           <MoreHorizontal size={22} />
           <span>More</span>
         </div>
       </div>
       <div className="sidebar-bottom">
-        <div className="sidebar-item">
+        <div 
+          className={`sidebar-item ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => onTabChange('settings')}
+        >
           <Settings size={22} />
           <span>Settings</span>
         </div>
