@@ -6,6 +6,7 @@ import VideoCall from './components/VideoCall';
 import Login from './components/Login';
 import PatientDirectory from './components/PatientDirectory';
 import TelehealthDashboard from './components/TelehealthDashboard';
+import MedicalRecords from './components/MedicalRecords';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Stethoscope, Phone, X, Check, Bell, Mail, RefreshCw, User, Thermometer, FileText, ShieldAlert, Activity } from 'lucide-react';
 import Gun from 'gun';
@@ -332,10 +333,7 @@ function App() {
                 <PatientDirectory />
               )}
               {activeTab === 'records' && (
-                <>
-                  <h2>Medical Records</h2>
-                  <p>Access secure patient history and clinical notes.</p>
-                </>
+                <MedicalRecords />
               )}
               {activeTab === 'telehealth' && (
                 <TelehealthDashboard onStartCall={handleStartCall} />

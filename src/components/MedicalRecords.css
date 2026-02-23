@@ -1,0 +1,302 @@
+.medical-records-container {
+    padding: 32px;
+    height: 100%;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+}
+
+.header-text h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.header-text p {
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+.header-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.search-box {
+    position: relative;
+    width: 400px;
+}
+
+.search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 12px 12px 42px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.search-box input:focus {
+    border-color: var(--med-primary);
+    box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.05);
+}
+
+.filter-pill-group {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-pill {
+    padding: 6px 14px;
+    background: #f1f5f9;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-pill.active {
+    background: white;
+    border-color: var(--med-primary);
+    color: var(--med-primary);
+}
+
+/* Section Divider */
+.section-divider {
+    width: 100%;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    line-height: 0.1em;
+    margin: 40px 0 20px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.section-divider span {
+    background: #f8fafc;
+    /* Match app background or specific container */
+    padding: 0 20px;
+}
+
+/* Record Card */
+.records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.record-card {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: all 0.2s;
+}
+
+.record-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+    border-color: var(--med-primary);
+}
+
+.record-card-main {
+    display: flex;
+    gap: 20px;
+    flex-grow: 1;
+}
+
+.record-icon {
+    width: 48px;
+    height: 48px;
+    background: #eff6ff;
+    color: var(--med-primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.record-info {
+    flex-grow: 1;
+}
+
+.record-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.patient-name {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.record-time-stamp {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.record-summary {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    max-width: 700px;
+}
+
+.record-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.tag-pill {
+    background: #f0fdf4;
+    color: #16a34a;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.record-meta-footer {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.record-meta-footer span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+/* Actions */
+.record-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.view-transcript-btn {
+    padding: 8px 16px;
+    background: #eff6ff;
+    color: var(--med-primary);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.view-transcript-btn:hover {
+    background: var(--med-primary);
+    color: white;
+}
+
+.download-record-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.download-record-btn:hover {
+    background: #f1f5f9;
+    color: var(--text-main);
+}
+
+/* No Results */
+.no-records-found {
+    padding: 80px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text-muted);
+    gap: 16px;
+}
+
+.no-records-found h3 {
+    color: var(--text-main);
+    font-size: 20px;
+}
+
+@media (max-width: 900px) {
+    .records-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .header-controls {
+        width: 100%;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .record-card {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .record-actions {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
