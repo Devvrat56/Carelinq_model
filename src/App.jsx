@@ -50,6 +50,7 @@ function App() {
   const [incomingCall, setIncomingCall] = useState(null);
   const [showRefreshHint, setShowRefreshHint] = useState(true);
   const [showChatWindowOnMobile, setShowChatWindowOnMobile] = useState(false);
+  const [showStatus, setShowStatus] = useState(true);
 
   // Persistence
   useEffect(() => {
@@ -70,7 +71,11 @@ function App() {
   // --- HARD REFRESH HINT ---
   useEffect(() => {
     const timer = setTimeout(() => setShowRefreshHint(false), 8000);
-    return () => clearTimeout(timer);
+    const statusTimer = setTimeout(() => setShowStatus(false), 10000);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(statusTimer);
+    };
   }, []);
 
   // --- REAL-TIME DISCOVERY & SYNC ---
@@ -212,13 +217,23 @@ function App() {
         </div>
       )}
 
-      <div className="user-status-bar med-status">
-        <div className="status-item">
-          <Stethoscope size={16} color="var(--med-primary)" />
-          <span>Oncology Specialist: <strong>{currentUser.email}</strong> <small>({APP_VERSION})</small></span>
-          <button className="logout-btn" onClick={() => setCurrentUser(null)}>Restart Session</button>
-        </div>
-      </div>
+      <AnimatePresence>
+        {showStatus && (
+          <motion.div 
+            className="user-status-bar med-status"
+            initial={{ y: -100, x: '-50%', opacity: 0 }}
+            animate={{ y: 0, x: '-50%', opacity: 1 }}
+            exit={{ y: -100, x: '-50%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+          >
+            <div className="status-item">
+              <Stethoscope size={16} color="var(--med-primary)" />
+              <span>Oncology Specialist: <strong>{currentUser.email}</strong> <small>({APP_VERSION})</small></span>
+              <button className="logout-btn" onClick={() => setCurrentUser(null)}>Restart Session</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="main-content">

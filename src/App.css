@@ -131,19 +131,19 @@
 
 .user-status-bar.med-status {
   position: absolute;
-  top: 12px;
+  top: 16px;
   left: 50%;
-  transform: translateX(-50%);
   background-color: var(--white);
-  padding: 8px 20px;
-  border-radius: 30px;
+  padding: 10px 24px;
+  border-radius: 40px;
   font-size: 13px;
   z-index: 1000;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 12px;
+  white-space: nowrap;
 }
 
 .status-item {
