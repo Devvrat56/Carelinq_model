@@ -113,11 +113,12 @@
 .text-box h2 {
     font-size: 22px;
     margin-bottom: 8px;
+    color: white;
 }
 
 .text-box p {
     font-size: 15px;
-    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.9);
     max-width: 400px;
     margin-bottom: 32px;
 }
