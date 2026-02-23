@@ -17,10 +17,10 @@ const Login = ({ onLogin }) => {
       <div className="login-card">
         <div className="login-header">
           <div className="med-logo-container">
-            <HeartPulse size={48} color="var(--med-primary)" />
+            <img src="/oncology.svg" alt="OncoLink Logo" style={{ width: '56px', height: '56px' }} />
           </div>
-          <h1>MediLink Portal</h1>
-          <p>Secure Medical Telehealth & Real-time Scribe</p>
+          <h1>OncoLink Portal</h1>
+          <p>Oncology-Specialized Telehealth & Secure Scribe</p>
         </div>
         
         <form onSubmit={handleSubmit} className="login-form">
