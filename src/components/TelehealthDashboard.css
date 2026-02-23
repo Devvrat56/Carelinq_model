@@ -113,12 +113,12 @@
 .text-box h2 {
     font-size: 22px;
     margin-bottom: 8px;
-    color: white;
+    color: #ffffff !important;
 }
 
 .text-box p {
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.9) !important;
     max-width: 400px;
     margin-bottom: 32px;
 }
@@ -147,6 +147,7 @@
     font-size: 11px;
     opacity: 0.8;
     margin-top: 24px;
+    color: white !important;
 }
 
 .tele-side-card {
