@@ -48,7 +48,6 @@ function App() {
   const [isCalling, setIsCalling] = useState(false);
   const [callType, setCallType] = useState(null);
   const [incomingCall, setIncomingCall] = useState(null);
-  const [showRefreshHint, setShowRefreshHint] = useState(true);
   const [showChatWindowOnMobile, setShowChatWindowOnMobile] = useState(false);
   const [showStatus, setShowStatus] = useState(true);
 
@@ -68,14 +67,10 @@ function App() {
     setShowChatWindowOnMobile(false);
   };
 
-  // --- HARD REFRESH HINT ---
+  // --- POPUP TIMERS ---
   useEffect(() => {
-    const timer = setTimeout(() => setShowRefreshHint(false), 4000);
     const statusTimer = setTimeout(() => setShowStatus(false), 4000);
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(statusTimer);
-    };
+    return () => clearTimeout(statusTimer);
   }, []);
 
   // --- REAL-TIME DISCOVERY & SYNC ---
@@ -210,12 +205,6 @@ function App() {
 
   return (
     <div className={`app-container carelinq-theme ${showChatWindowOnMobile ? 'chat-window-active' : ''}`}>
-      {showRefreshHint && (
-        <div className="version-banner">
-          <RefreshCw size={14} className="spin" />
-          <span>New Version Active! Please <strong>Hard Refresh (Ctrl+F5)</strong> to sync the video engine.</span>
-        </div>
-      )}
 
       <AnimatePresence>
         {showStatus && (
