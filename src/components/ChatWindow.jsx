@@ -309,7 +309,8 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }
             </div>
           </div>
         )}
-        <div className="input-toolbar">
+
+        <div className="modern-input-wrapper">
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -317,54 +318,67 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }
             onChange={handleFileUpload}
             accept="image/*,.pdf,.doc,.docx,audio/*"
           />
-          <button title="Attach File" onClick={() => fileInputRef.current.click()}>
-            <Paperclip size={18} />
-          </button>
-          <button 
-            title={isRecording ? "Stop Recording" : "Record Voice Message"} 
-            onClick={isRecording ? stopRecording : startRecording}
-            className={isRecording ? 'recording-pulse' : ''}
-          >
-            {isRecording ? <Square size={18} color="#ef4444" /> : <Mic size={18} />}
-          </button>
           
-          <div className="emoji-trigger-container" ref={emojiPickerRef}>
-            <button title="Emojis" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
-               <Smile size={18} />
+          <div className="input-left-actions">
+            <button className="action-icon-btn" title="Attach File" onClick={() => fileInputRef.current.click()}>
+              <Paperclip size={20} />
             </button>
-            {showEmojiPicker && (
-               <div className="emoji-picker-wrapper">
-                 <EmojiPicker 
-                    onEmojiClick={onEmojiClick}
-                    autoFocusSearch={false}
-                    theme="light"
-                    width={320}
-                    height={400}
-                 />
-               </div>
+            <div className="emoji-trigger-container" ref={emojiPickerRef}>
+              <button className="action-icon-btn" title="Emojis" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+                 <Smile size={20} />
+              </button>
+              {showEmojiPicker && (
+                 <div className="emoji-picker-wrapper">
+                   <EmojiPicker 
+                      onEmojiClick={onEmojiClick}
+                      autoFocusSearch={false}
+                      theme="light"
+                      width={320}
+                      height={400}
+                   />
+                 </div>
+              )}
+            </div>
+          </div>
+
+          <div className="textarea-container">
+            <textarea 
+              placeholder={isRecording ? "Recording audio..." : `Send secure message to ${chat.name}...`} 
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyPress}
+              disabled={isRecording}
+              rows={1}
+            />
+            {isRecording && (
+              <div className="recording-overlay">
+                <span className="recording-dot"></span>
+                <span className="recording-timer">{formatTime(recordingTime)}</span>
+              </div>
             )}
           </div>
 
-          <button title="More Options"><MoreHorizontal size={18} /></button>
-          
-          {isRecording && (
-            <div className="recording-status">
-              <span className="recording-dot"></span>
-              <span className="recording-timer">{formatTime(recordingTime)}</span>
-            </div>
-          )}
-        </div>
-        <div className="input-container">
-          <textarea 
-            placeholder={isRecording ? "Recording audio..." : `Send secure message to ${chat.name}...`} 
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={handleKeyPress}
-            disabled={isRecording}
-          />
-          <button className="send-btn medical" disabled={!inputText.trim() || isRecording} onClick={handleSend}>
-            <Send size={18} />
-          </button>
+          <div className="input-right-actions">
+            <button 
+              className={`action-icon-btn ${isRecording ? 'recording-active' : ''}`}
+              title={isRecording ? "Stop Recording" : "Record Voice Message"} 
+              onClick={isRecording ? stopRecording : startRecording}
+            >
+              {isRecording ? <Square size={20} color="#ef4444" /> : <Mic size={20} />}
+            </button>
+            
+            <button className="action-icon-btn" title="More Options">
+              <MoreHorizontal size={20} />
+            </button>
+
+            <button 
+              className="modern-send-btn" 
+              disabled={!inputText.trim() || isRecording} 
+              onClick={handleSend}
+            >
+              <Send size={20} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
