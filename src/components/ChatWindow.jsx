@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Phone, 
-  Video, 
+  Video as VideoIcon, 
   Info, 
   Send, 
   Paperclip, 
@@ -14,8 +14,8 @@ import {
   Square,
   Check,
   ArrowLeft,
-  Image as ImageIcon,
-  X as CloseIcon
+  X as CloseIcon,
+  Stethoscope
 } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import './ChatWindow.css';
@@ -199,15 +199,22 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }
           </div>
         </div>
         <div className="chat-header-actions">
-          <button onClick={() => onStartCall('audio')} title="Start Audio Consult" className="med-action-btn">
-            <Phone size={20} />
-          </button>
-          <button onClick={() => onStartCall('video')} title="Start Video Consult" className="med-action-btn primary">
-            <Video size={20} />
+          <button className="med-action-btn start-meet-btn" onClick={() => onStartCall('video')}>
+            <Stethoscope size={18} />
+            <span>Start Medical Session</span>
           </button>
           <div className="divider"></div>
-          <button title="Case Details">
+          <button className="med-action-btn" onClick={() => onStartCall('audio')} title="Audio Call">
+            <Phone size={20} />
+          </button>
+          <button className="med-action-btn" onClick={() => onStartCall('video')} title="Video Consult">
+            <VideoIcon size={20} />
+          </button>
+          <button className="med-action-btn" title="Case Details">
             <Info size={20} />
+          </button>
+          <button className="med-action-btn">
+            <MoreHorizontal size={20} />
           </button>
         </div>
       </div>

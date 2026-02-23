@@ -83,14 +83,35 @@
     color: var(--med-primary);
 }
 
-.med-action-btn.primary {
+.start-meet-btn {
     background-color: var(--med-primary);
-    color: white;
+    color: white !important;
+    padding: 8px 16px !important;
+    gap: 10px !important;
+    border-radius: 20px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    box-shadow: 0 4px 10px rgba(30, 64, 175, 0.2);
 }
 
-.med-action-btn.primary:hover {
-    background-color: var(--primary-hover);
-    color: white;
+.start-meet-btn:hover {
+    background-color: var(--primary-hover) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(30, 64, 175, 0.3);
+}
+
+.start-meet-btn span {
+    display: inline;
+}
+
+@media (max-width: 900px) {
+    .start-meet-btn span {
+        display: none;
+    }
+
+    .start-meet-btn {
+        padding: 8px !important;
+    }
 }
 
 .divider {

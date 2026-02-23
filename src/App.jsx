@@ -4,6 +4,8 @@ import ChatList from './components/ChatList';
 import ChatWindow from './components/ChatWindow';
 import VideoCall from './components/VideoCall';
 import Login from './components/Login';
+import PatientDirectory from './components/PatientDirectory';
+import TelehealthDashboard from './components/TelehealthDashboard';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Stethoscope, Phone, X, Check, Bell, Mail, RefreshCw, User, Thermometer, FileText, ShieldAlert, Activity } from 'lucide-react';
 import Gun from 'gun';
@@ -22,7 +24,7 @@ const gun = Gun({
   ]
 });
 
-const APP_VERSION = "CareLinq-v1.1.0";
+const APP_VERSION = "OncoPortal v2.4";
 
 const INITIAL_CHATS = [
   { id: 'carelinq_support', name: 'CareLinq Support', lastMsg: 'Your real-time clinic is active.', time: 'System', avatar: 'https://i.pravatar.cc/150?u=carelinq', email: 'support@carelinq.com' },
@@ -212,7 +214,7 @@ function App() {
       <div className="user-status-bar med-status">
         <div className="status-item">
           <Stethoscope size={16} color="var(--med-primary)" />
-          <span>CareLinq Doctor: <strong>{currentUser.email}</strong> <small>({APP_VERSION})</small></span>
+          <span>Oncology Specialist: <strong>{currentUser.email}</strong> <small>({APP_VERSION})</small></span>
           <button className="logout-btn" onClick={() => setCurrentUser(null)}>Restart Session</button>
         </div>
       </div>
@@ -237,7 +239,7 @@ function App() {
               <ChatWindow 
                 chat={activeChat} 
                 messages={activeChat ? (messages[activeChat.id] || []) : []}
-                onSendMessage={(t, s, f) => onSendMessage(activeChat.id, t, s, f)}
+                onSendMessage={(t, s, f) => activeChat && onSendMessage(activeChat.id, t, s, f)}
                 onStartCall={handleStartCall} 
                 onBackToList={handleBackToList}
               />
@@ -327,11 +329,7 @@ function App() {
                 </>
               )}
               {activeTab === 'patients' && (
-                <>
-                  <h2>Patient Directory</h2>
-                  <p>Manage and search through your patient list.</p>
-                  <div className="search-bar-placeholder">Search Patients...</div>
-                </>
+                <PatientDirectory />
               )}
               {activeTab === 'records' && (
                 <>
@@ -340,20 +338,17 @@ function App() {
                 </>
               )}
               {activeTab === 'telehealth' && (
-                <>
-                  <h2>Telehealth Dashboard</h2>
-                  <p>Schedule and manage your upcoming video consultations.</p>
-                  <button className="start-session-btn" onClick={() => setActiveTab('consults')}>Start New Session</button>
-                </>
+                <TelehealthDashboard onStartCall={handleStartCall} />
               )}
               {activeTab === 'settings' && (
                 <>
-                  <h2>Account Settings</h2>
-                  <p>Manage your profile, notifications, and security preferences.</p>
+                  <h2>Oncology Patient Registry</h2>
+                  <p>Comprehensive cancer care management and longitudinal history.</p>
+                  <div className="search-bar-placeholder">Search Oncology Patients...</div>
                   <div className="settings-options">
                     <div className="setting-row">Profile Information</div>
                     <div className="setting-row">Privacy & Security</div>
-                    <div className="setting-row">CareLinq Subscription</div>
+                    <div className="setting-row">OncoLink Subscription</div>
                   </div>
                 </>
               )}

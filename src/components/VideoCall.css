@@ -5,150 +5,331 @@
     width: 100vw;
     height: 100vh;
     background-color: #0f172a;
-    z-index: 9999;
-    color: white;
+    /* Deep Navy Background */
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.webrtc-grid {
-    flex-grow: 1;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    position: relative;
-    background-color: #000;
+.doctor-meeting-room {
+    width: 95vw;
+    height: 90vh;
+    background: white;
+    border-radius: 24px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
 }
 
-.video-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    background-color: #1e293b;
+/* Clinical Sidebar */
+.clinical-sidebar {
+    width: 340px;
+    background-color: #f8fafc;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.patient-mini-profile {
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.patient-mini-profile img {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.patient-mini-profile .info h3 {
+    font-size: 16px;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.patient-mini-profile .info span {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.clinical-tabs {
+    display: flex;
+    padding: 12px;
+    gap: 8px;
+    background: white;
+}
+
+.clinical-tabs button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.clinical-tabs button.active {
+    background: var(--med-primary);
+    color: white;
+}
+
+.clinical-content {
+    flex-grow: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.clinical-textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-size: 14px;
+    color: var(--text-main);
+    outline: none;
+    line-height: 1.6;
+}
+
+.vital-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: white;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.vital-item span {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.vital-item strong {
+    color: var(--med-primary);
+}
+
+.clinical-footer {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid var(--border-color);
+}
+
+.save-session-btn {
+    width: 100%;
+    background: var(--med-primary);
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Meet Main Area */
+.meet-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background: #0f172a;
+}
+
+.meet-header {
+    padding: 20px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.hipaa-badge {
+    background: #16a34a;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    width: fit-content;
+}
+
+.meet-branding h2 {
+    color: white;
+    font-size: 18px;
+    margin: 0;
+}
+
+.status-dot-text {
+    font-size: 12px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot-text .dot {
+    width: 6px;
+    height: 6px;
+    background: #16a34a;
+    border-radius: 50%;
+}
+
+.meet-actions-top {
+    display: flex;
+    gap: 12px;
+}
+
+.tool-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.tool-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tool-btn.text-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.tool-btn.text-danger:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Modern Video Grid */
+.video-grid-modern {
+    flex-grow: 1;
+    padding: 20px;
+    position: relative;
+    display: flex;
+    gap: 20px;
+}
+
+.remote-view-container {
+    flex-grow: 1;
+    background: #1e293b;
+    border-radius: 20px;
+    position: relative;
     overflow: hidden;
 }
 
-.video-container video {
+.remote-view-container video {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.video-container.remote {
-    grid-area: 1 / 1 / 2 / 2;
-}
-
-.video-container.local {
+.local-view-mini {
     position: absolute;
-    bottom: 24px;
-    right: 24px;
+    bottom: 40px;
+    right: 40px;
     width: 240px;
-    height: 180px;
-    border-radius: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    z-index: 10;
+    height: 150px;
+    background: #000;
+    border-radius: 16px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.video-label {
+.local-view-mini video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.label-overlay {
     position: absolute;
     bottom: 12px;
     left: 12px;
-    background-color: rgba(0, 0, 0, 0.6);
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.calling-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(15, 23, 42, 0.9);
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
-
-.calling-overlay h3 {
-    font-size: 24px;
-    font-weight: 700;
-}
-
-.circle-btn {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.5);
     color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    transition: all 0.2s;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    backdrop-filter: blur(4px);
 }
 
-.circle-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+.lobby-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    z-index: 5;
 }
 
-.circle-btn.off {
-    background-color: #ef4444;
-}
-
-.no-video {
-    color: #64748b;
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.spin {
-    animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Header & Footer overrides for WebRTC */
-.custom-call-header {
-    height: 64px;
-    background-color: #0f172a;
-    padding: 0 24px;
+/* Controls Bar */
+.meet-controls-bar {
+    padding: 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.9);
 }
 
-.exit-call-btn {
-    background-color: #ef4444;
-    color: white;
-    padding: 8px 20px;
-    border-radius: 8px;
-    font-weight: 700;
+.controls-group {
     display: flex;
+    gap: 12px;
     align-items: center;
-    gap: 8px;
 }
 
-.call-status-footer {
+.control-btn {
+    width: 48px;
     height: 48px;
-    background-color: #0f172a;
-    padding: 0 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
     display: flex;
     align-items: center;
+    justify-content: center;
+}
+
+.control-btn.off {
+    background: #ef4444;
+}
+
+.action-pill {
+    background: white;
+    color: var(--text-main);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+@media (max-width: 1024px) {
+    .clinical-sidebar {
+        display: none;
+        /* Hide sidebar on small tablets to save video space */
+    }
 }
