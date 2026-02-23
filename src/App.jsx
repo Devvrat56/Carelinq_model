@@ -70,8 +70,8 @@ function App() {
 
   // --- HARD REFRESH HINT ---
   useEffect(() => {
-    const timer = setTimeout(() => setShowRefreshHint(false), 8000);
-    const statusTimer = setTimeout(() => setShowStatus(false), 10000);
+    const timer = setTimeout(() => setShowRefreshHint(false), 4000);
+    const statusTimer = setTimeout(() => setShowStatus(false), 4000);
     return () => {
       clearTimeout(timer);
       clearTimeout(statusTimer);
