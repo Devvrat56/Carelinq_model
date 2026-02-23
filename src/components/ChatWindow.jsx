@@ -10,19 +10,54 @@ import {
   Shield, 
   FileText, 
   Download,
-  Image as ImageIcon
+  Mic,
+  Square,
+  Check,
+  ArrowLeft,
+  Image as ImageIcon,
+  X as CloseIcon
 } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 import './ChatWindow.css';
 
-const ChatWindow = ({ chat, messages, onSendMessage, onStartCall }) => {
+const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }) => {
   const [inputText, setInputText] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [pendingFile, setPendingFile] = useState(null);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const timerRef = useRef(null);
+  const emojiPickerRef = useRef(null);
   
   // Auto-scroll to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Clean up timer and recorder on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    };
+  }, []);
+
+  // Click away to close emoji picker
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSend = () => {
     if (inputText.trim()) {
@@ -35,22 +70,95 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Limit file size for P2P demo (5MB to allow small videos)
-    if (file.size > 5000000) {
-      alert("Attachment too large. Please limit to 5MB for P2P sharing.");
+    // Limit file size for demo (100MB)
+    if (file.size > 100000000) {
+      alert("Attachment too large. Please limit to 100MB.");
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const base64Data = event.target.result;
-      onSendMessage(`Sent a file: ${file.name}`, false, {
+      setPendingFile({
         name: file.name,
         type: file.type,
-        data: base64Data
+        data: event.target.result,
+        displayText: `Sent a file: ${file.name}`
       });
     };
     reader.readAsDataURL(file);
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setPendingFile({
+            name: `voice-message-${Date.now()}.webm`,
+            type: 'audio/webm',
+            data: event.target.result,
+            displayText: 'Sent a voice message'
+          });
+        };
+        reader.readAsDataURL(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      alert("Could not access microphone. Please check permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const onEmojiClick = (emojiObject) => {
+    setInputText(prev => prev + emojiObject.emoji);
+    // Optionally focus the textarea back
+  };
+
+  const handleConfirmSend = () => {
+    if (pendingFile) {
+      onSendMessage(pendingFile.displayText, false, {
+        name: pendingFile.name,
+        type: pendingFile.type,
+        data: pendingFile.data
+      });
+      setPendingFile(null);
+    }
+  };
+
+  const handleCancelSend = () => {
+    setPendingFile(null);
   };
 
   const handleKeyPress = (e) => {
@@ -78,6 +186,9 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall }) => {
     <div className="chat-window">
       <div className="chat-header">
         <div className="chat-header-info">
+          <button className="mobile-back-btn" onClick={onBackToList}>
+            <ArrowLeft size={20} />
+          </button>
           <div className="avatar-container-sm">
              <img src={chat.avatar} alt={chat.name} className="avatar-sm" />
              <div className="status-indicator online"></div>
@@ -138,7 +249,7 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall }) => {
                 
                 {/* Render Text with Link Support */}
                 <p>
-                  {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => 
+                   {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => 
                     part.match(/^https?:\/\//) ? (
                       <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="chat-link">
                         {part}
@@ -172,28 +283,79 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall }) => {
       </div>
 
       <div className="chat-input-area medical-input">
+        {pendingFile && (
+          <div className="file-verification-bar">
+            <div className="verification-info">
+               <FileText size={18} color="var(--med-primary)" />
+               <div className="verification-text">
+                  <span className="file-label">Confirm File Transfer</span>
+                  <span className="file-name">{pendingFile.name} ({(pendingFile.data.length * 0.75 / 1024).toFixed(0)} KB)</span>
+               </div>
+            </div>
+            <div className="verification-actions">
+               <button className="verification-btn cancel" onClick={handleCancelSend}>
+                  <CloseIcon size={16} /> Discard
+               </button>
+               <button className="verification-btn confirm" onClick={handleConfirmSend}>
+                  <Check size={16} /> Send Securely
+               </button>
+            </div>
+          </div>
+        )}
         <div className="input-toolbar">
           <input 
             type="file" 
             ref={fileInputRef} 
             style={{ display: 'none' }} 
             onChange={handleFileUpload}
-            accept="image/*,.pdf,.doc,.docx"
+            accept="image/*,.pdf,.doc,.docx,audio/*"
           />
-          <button title="Attach Lab Report" onClick={() => fileInputRef.current.click()}>
+          <button title="Attach File" onClick={() => fileInputRef.current.click()}>
             <Paperclip size={18} />
           </button>
-          <button title="Quick Response"><Smile size={18} /></button>
+          <button 
+            title={isRecording ? "Stop Recording" : "Record Voice Message"} 
+            onClick={isRecording ? stopRecording : startRecording}
+            className={isRecording ? 'recording-pulse' : ''}
+          >
+            {isRecording ? <Square size={18} color="#ef4444" /> : <Mic size={18} />}
+          </button>
+          
+          <div className="emoji-trigger-container" ref={emojiPickerRef}>
+            <button title="Emojis" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+               <Smile size={18} />
+            </button>
+            {showEmojiPicker && (
+               <div className="emoji-picker-wrapper">
+                 <EmojiPicker 
+                    onEmojiClick={onEmojiClick}
+                    autoFocusSearch={false}
+                    theme="light"
+                    width={320}
+                    height={400}
+                 />
+               </div>
+            )}
+          </div>
+
           <button title="More Options"><MoreHorizontal size={18} /></button>
+          
+          {isRecording && (
+            <div className="recording-status">
+              <span className="recording-dot"></span>
+              <span className="recording-timer">{formatTime(recordingTime)}</span>
+            </div>
+          )}
         </div>
         <div className="input-container">
           <textarea 
-            placeholder={`Send secure message to ${chat.name}...`} 
+            placeholder={isRecording ? "Recording audio..." : `Send secure message to ${chat.name}...`} 
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyPress}
+            disabled={isRecording}
           />
-          <button className="send-btn medical" disabled={!inputText.trim()} onClick={handleSend}>
+          <button className="send-btn medical" disabled={!inputText.trim() || isRecording} onClick={handleSend}>
             <Send size={18} />
           </button>
         </div>

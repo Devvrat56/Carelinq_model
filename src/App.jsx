@@ -15,8 +15,10 @@ import './App.css';
 const gun = Gun({
   peers: [
     'https://gun-manhattan.herokuapp.com/gun',
-    'https://relay.peer.ooo/gun',
-    'https://gun-us.herokuapp.com/gun'
+    'https://gun-us.herokuapp.com/gun',
+    'https://gun-eu.herokuapp.com/gun',
+    'https://peer.wall.org/gun',
+    'https://gunjs.herokuapp.com/gun'
   ]
 });
 
@@ -44,12 +46,23 @@ function App() {
   const [callType, setCallType] = useState(null);
   const [incomingCall, setIncomingCall] = useState(null);
   const [showRefreshHint, setShowRefreshHint] = useState(true);
+  const [showChatWindowOnMobile, setShowChatWindowOnMobile] = useState(false);
 
   // Persistence
   useEffect(() => {
     if (currentUser) localStorage.setItem('medichat_user', JSON.stringify(currentUser));
     localStorage.setItem('medichat_chats', JSON.stringify(chats));
   }, [currentUser, chats]);
+
+  // Handle active chat selection and toggle view on mobile
+  const handleSelectChat = (chat) => {
+    setActiveChat(chat);
+    setShowChatWindowOnMobile(true);
+  };
+
+  const handleBackToList = () => {
+    setShowChatWindowOnMobile(false);
+  };
 
   // --- HARD REFRESH HINT ---
   useEffect(() => {
@@ -179,6 +192,7 @@ function App() {
     };
     if (!chats.find(c => c.id === chatId)) setChats([targetChat, ...chats]);
     setActiveChat(targetChat);
+    setShowChatWindowOnMobile(true);
     setCallType(incomingCall.type);
     setIsCalling(true);
     setIncomingCall(null);
@@ -187,7 +201,7 @@ function App() {
   if (!currentUser) return <Login onLogin={(email) => setCurrentUser({ email, name: email.split('@')[0], id: email.replace(/[@.]/g, '_'), avatar: `https://i.pravatar.cc/150?u=${email.replace(/[@.]/g, '_')}` })} />;
 
   return (
-    <div className="app-container carelinq-theme">
+    <div className={`app-container carelinq-theme ${showChatWindowOnMobile ? 'chat-window-active' : ''}`}>
       {showRefreshHint && (
         <div className="version-banner">
           <RefreshCw size={14} className="spin" />
@@ -207,22 +221,27 @@ function App() {
       <div className="main-content">
         {activeTab === 'consults' ? (
           <>
-            <ChatList 
-              activeChat={activeChat?.id} 
-              onSelectChat={setActiveChat} 
-              chats={chats}
-              onAddCandidate={(email) => {
-                const id = email.replace(/[@.]/g, '_');
-                if (chats.find(c => c.id === id)) return;
-                setChats([{ id, name: email.split('@')[0], email, avatar: `https://i.pravatar.cc/150?u=${id}`, lastMsg: 'Consultation Created' }, ...chats]);
-              }}
-            />
-            <ChatWindow 
-              chat={activeChat} 
-              messages={activeChat ? (messages[activeChat.id] || []) : []}
-              onSendMessage={(t, s, f) => onSendMessage(activeChat.id, t, s, f)}
-              onStartCall={handleStartCall} 
-            />
+            <div className={`chat-list-wrapper ${showChatWindowOnMobile ? 'hide-mobile' : ''}`}>
+              <ChatList 
+                activeChat={activeChat?.id} 
+                onSelectChat={handleSelectChat} 
+                chats={chats}
+                onAddCandidate={(email) => {
+                  const id = email.replace(/[@.]/g, '_');
+                  if (chats.find(c => c.id === id)) return;
+                  setChats([{ id, name: email.split('@')[0], email, avatar: `https://i.pravatar.cc/150?u=${id}`, lastMsg: 'Consultation Created' }, ...chats]);
+                }}
+              />
+            </div>
+            <div className={`chat-window-wrapper ${!showChatWindowOnMobile ? 'hide-mobile' : ''}`}>
+              <ChatWindow 
+                chat={activeChat} 
+                messages={activeChat ? (messages[activeChat.id] || []) : []}
+                onSendMessage={(t, s, f) => onSendMessage(activeChat.id, t, s, f)}
+                onStartCall={handleStartCall} 
+                onBackToList={handleBackToList}
+              />
+            </div>
           </>
         ) : (
           <div className="placeholder-view">

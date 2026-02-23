@@ -167,3 +167,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+@media (max-width: 768px) {
+    .chat-list {
+        width: 100%;
+        border-right: none;
+    }
+}
