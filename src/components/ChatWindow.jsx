@@ -366,10 +366,6 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }
             >
               {isRecording ? <Square size={20} color="#ef4444" /> : <Mic size={20} />}
             </button>
-            
-            <button className="action-icon-btn" title="More Options">
-              <MoreHorizontal size={20} />
-            </button>
 
             <button 
               className="modern-send-btn" 
