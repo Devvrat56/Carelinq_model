@@ -30,7 +30,7 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
 
         // 2. Initialize PeerJS (Global Library from index.html)
         setStatus('Setting up Secure Tunnel...');
-        const myPeerID = `medilink_id_${currentUser.email.replace(/[@.]/g, '_')}`;
+        const myPeerID = `carelinq_id_${currentUser.email.replace(/[@.]/g, '_')}`;
         
         const peer = new window.Peer(myPeerID, {
             debug: 1,
@@ -44,7 +44,7 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
 
         peer.on('open', (id) => {
           setStatus('Ready. Waiting for Patient...');
-          const targetPeerID = `medilink_id_${chat.email.replace(/[@.]/g, '_')}`;
+          const targetPeerID = `carelinq_id_${chat.email.replace(/[@.]/g, '_')}`;
           const call = peer.call(targetPeerID, stream);
           
           if (call) {

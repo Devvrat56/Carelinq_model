@@ -26,7 +26,7 @@ const PatientDirectory = () => {
     <div className="patient-directory">
       <div className="directory-header">
         <div className="header-left">
-          <h1>OncoLink Patient Center</h1>
+          <h1>Carelinq Patient Center</h1>
           <p>Longitudinal oncology care and clinical trial management.</p>
         </div>
         <button className="add-patient-btn">

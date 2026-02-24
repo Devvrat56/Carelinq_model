@@ -350,7 +350,7 @@ function App() {
                   <div className="settings-options">
                     <div className="setting-row">Profile Information</div>
                     <div className="setting-row">Privacy & Security</div>
-                    <div className="setting-row">OncoLink Subscription</div>
+                    <div className="setting-row">Carelinq Subscription</div>
                   </div>
                 </>
               )}

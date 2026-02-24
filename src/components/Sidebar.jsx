@@ -24,7 +24,7 @@ const Sidebar = ({ activeTab, onTabChange }) => {
     <div className="sidebar">
       <div className="sidebar-top">
         <div className="sidebar-logo">
-           <img src="/oncology.svg" alt="OncoLink Logo" style={{ width: '32px', height: '32px' }} />
+           <img src="/oncology.svg" alt="Carelinq Logo" style={{ width: '32px', height: '32px' }} />
         </div>
         {mainItems.map((item) => {
           const Icon = item.icon;

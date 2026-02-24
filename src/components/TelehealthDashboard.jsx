@@ -25,7 +25,7 @@ const TelehealthDashboard = ({ onStartCall }) => {
     <div className="telehealth-dashboard">
       <div className="tele-header">
         <div className="tele-header-left">
-          <h1>OncoLink Virtual Clinic</h1>
+          <h1>Carelinq Virtual Clinic</h1>
           <p>Secure, oncology-specialized meeting rooms for cancer care.</p>
         </div>
         <div className="tele-stats">

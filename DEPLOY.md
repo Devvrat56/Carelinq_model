@@ -1,4 +1,4 @@
-# 🚀 MediLink Deployment Guide
+# 🚀 Carelinq Deployment Guide
 
 Your production build is ready! Follow these steps to get your medical portal live on the internet.
 
@@ -18,7 +18,7 @@ Vercel is perfect for Vite/React apps.
    - Log in if required.
    - Say **Yes** to "Set up and deploy?".
    - Use the default settings (it will detect Vite).
-4. **Result**: You will get a unique URL (e.g., `medilink-seven.vercel.app`).
+4. **Result**: You will get a unique URL (e.g., `carelinq-seven.vercel.app`).
 
 ## Option 2: Netlify (Drag & Drop)
 If you don't want to use the command line:

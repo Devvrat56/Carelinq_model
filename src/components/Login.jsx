@@ -17,9 +17,9 @@ const Login = ({ onLogin }) => {
       <div className="login-card">
         <div className="login-header">
           <div className="med-logo-container">
-            <img src="/oncology.svg" alt="OncoLink Logo" style={{ width: '56px', height: '56px' }} />
+            <img src="/oncology.svg" alt="Carelinq Logo" style={{ width: '56px', height: '56px' }} />
           </div>
-          <h1>OncoLink Portal</h1>
+          <h1>Carelinq Portal</h1>
           <p>Oncology-Specialized Telehealth & Secure Scribe</p>
         </div>
         

@@ -1,6 +1,6 @@
-# 🏥 MediLink - Professional Telehealth Portal
+# 🏥 Carelinq - Professional Telehealth Portal
 
-MediLink is an enterprise-grade medical communication platform designed for real-time consultations and digital scribing.
+Carelinq is an enterprise-grade medical communication platform designed for real-time consultations and digital scribing.
 
 ## 🚀 Features
 - **Real-time Global Chat**: Decentralized messaging powered by Gun.js. Works across different computers instantly.
