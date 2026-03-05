@@ -6,5 +6,7 @@ export default defineConfig({
   plugins: [react()],
   define: {
     global: 'window',
+    'process.env': {},
+    Buffer: '[]', // Simple-peer often checks for Buffer
   },
 })

@@ -280,17 +280,27 @@
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 40px;
   background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
   overflow-y: auto;
+  padding: 40px;
+}
+
+/* Activity (Health Status) specific: No scroll, no padding */
+.placeholder-view.tab-activity {
+  overflow: hidden;
+  padding: 0;
+  background: white;
 }
 
 .placeholder-content {
-  max-width: 600px;
   width: 100%;
-  text-align: center;
+  max-width: 1200px;
   animation: fadeIn 0.5s ease-out;
+}
+
+.tab-activity .placeholder-content {
+  height: 100%;
+  max-width: 100% !important;
 }
 
 .placeholder-content h2 {

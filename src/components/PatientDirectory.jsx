@@ -4,11 +4,11 @@ import './PatientDirectory.css';
 
 const PATIENTS_DATA = [
   { id: 1, name: 'John Doe', email: 'john.doe@oncocare.com', phone: '+1 234-567-8901', lastVisit: '2025-10-15', status: 'Active', condition: 'Lung Adenocarcinoma' },
-  { id: 2, name: 'Jane Smith', email: 'jane.smith@oncocare.com', phone: '+1 234-567-8902', lastVisit: '2025-11-20', status: 'Pending', condition: 'Breast Cancer (Stage II)' },
+  { id: 2, name: 'Jane Smith', email: 'jane.smith@oncocare.com', phone: '+1 234-567-8902', lastVisit: '2025-11-20', status: 'Pending', condition: 'Malignant Melanoma' },
   { id: 3, name: 'Robert Brown', email: 'robert.b@oncocare.com', phone: '+1 234-567-8903', lastVisit: '2025-09-12', status: 'Active', condition: 'Multiple Myeloma' },
-  { id: 4, name: 'Emily White', email: 'emily.w@oncocare.com', phone: '+1 234-567-8904', lastVisit: '2025-12-05', status: 'Active', condition: 'Glioblastoma' },
+  { id: 4, name: 'Emily White', email: 'emily.w@oncocare.com', phone: '+1 234-567-8904', lastVisit: '2025-12-05', status: 'Active', condition: 'Basal Cell Carcinoma' },
   { id: 5, name: 'Michael Lee', email: 'm.lee@oncocare.com', phone: '+1 234-567-8905', lastVisit: '2025-08-30', status: 'Inactive', condition: 'Ovarian Carcinoma' },
-  { id: 6, name: 'Sarah Wilson', email: 's.wilson@oncocare.com', phone: '+1 234-567-8906', lastVisit: '2026-01-10', status: 'Active', condition: 'Hodgkin Lymphoma' },
+  { id: 6, name: 'Sarah Wilson', email: 's.wilson@oncocare.com', phone: '+1 234-567-8906', lastVisit: '2026-01-10', status: 'Active', condition: 'Chronic Psoriasis' },
 ];
 
 const PatientDirectory = () => {
@@ -26,12 +26,12 @@ const PatientDirectory = () => {
     <div className="patient-directory">
       <div className="directory-header">
         <div className="header-left">
-          <h1>Carelinq Patient Center</h1>
-          <p>Longitudinal oncology care and clinical trial management.</p>
+          <h1>Clinical Patient Center</h1>
+          <p>Oncology & Dermatology care with clinical trial management.</p>
         </div>
         <button className="add-patient-btn">
           <UserPlus size={18} />
-          <span>Onboard New Oncology Case</span>
+          <span>Onboard New Specialty Case</span>
         </button>
       </div>
 

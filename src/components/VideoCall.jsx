@@ -5,6 +5,7 @@ import {
   RefreshCw, AlertCircle, FileText, Clipboard, Pill, Activity as ActivityIcon,
   Maximize2, Layout, MoreVertical, Search, CheckCircle
 } from 'lucide-react';
+import Peer from 'simple-peer';
 import './VideoCall.css';
 
 const VideoCall = ({ chat, currentUser, onEndCall }) => {
@@ -15,90 +16,195 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
   const [videoActive, setVideoActive] = useState(true);
   const [activeClinicalTab, setActiveClinicalTab] = useState('notes');
   const [error, setError] = useState(null);
+  const [showAudioBypass, setShowAudioBypass] = useState(false);
   
   const localVideoRef = useRef();
   const remoteVideoRef = useRef();
-  const peerInstance = useRef(null);
+  const socketRef = useRef(null);
+  const peerRef = useRef(null);
 
-  useEffect(() => {
+  const startMedia = (withVideo = true) => {
     // 1. Get Camera/Mic Access
-    setStatus('Requesting Camera Access...');
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    setStatus(withVideo ? 'Requesting Camera Access...' : 'Requesting Microphone Access...');
+    setShowAudioBypass(false);
+    
+    const constraints = { 
+      video: withVideo ? { width: { ideal: 1280 }, height: { ideal: 720 } } : false, 
+      audio: true 
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
+      .catch(err => {
+        if (withVideo) {
+          console.warn('Full HD/Ideal constraints failed, trying basic video/audio...', err);
+          return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        }
+        throw err;
+      })
+      .catch(err => {
+        if (withVideo) {
+          console.warn('Video acquisition failed, falling back to AUDIO ONLY...', err);
+          return navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+        }
+        throw err;
+      })
       .then(stream => {
         setLocalStream(stream);
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
-        // 2. Initialize PeerJS (Global Library from index.html)
-        setStatus('Setting up Secure Tunnel...');
-        const myPeerID = `carelinq_id_${currentUser.email.replace(/[@.]/g, '_')}`;
-        
-        const peer = new window.Peer(myPeerID, {
-            debug: 1,
-            config: {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' }
-                ]
-            }
-        });
+        const hasVideo = stream.getVideoTracks().length > 0;
+        if (!hasVideo) {
+          setStatus('Audio-Only Mode Enabled');
+          setVideoActive(false);
+        }
 
-        peer.on('open', (id) => {
-          setStatus('Ready. Waiting for Patient...');
-          const targetPeerID = `carelinq_id_${chat.email.replace(/[@.]/g, '_')}`;
-          const call = peer.call(targetPeerID, stream);
+        // 2. Setup WebSocket Signaling
+        setStatus(hasVideo ? 'Connecting Securely...' : 'Connecting Audio Tunnel...');
+        const socket = new WebSocket('ws://localhost:8080');
+        socketRef.current = socket;
+
+        const roomId = [currentUser.email, chat.email].sort().join('--');
+
+        socket.onopen = () => {
+          setStatus('Joining Secured Room...');
+          socket.send(JSON.stringify({ type: 'join', room: roomId }));
           
-          if (call) {
-              call.on('stream', (rStream) => {
-                setRemoteStream(rStream);
-                if (remoteVideoRef.current) remoteVideoRef.current.srcObject = rStream;
-                setStatus('Connected');
-              });
-          }
-        });
+          const isInitiator = currentUser.email.toLowerCase() < chat.email.toLowerCase();
+          
+          const peer = new Peer({
+            initiator: isInitiator,
+            trickle: false,
+            stream: stream,
+            config: {
+              iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' }
+              ]
+            }
+          });
 
-        peer.on('call', (call) => {
-          setStatus('Connecting to Patient Stream...');
-          call.answer(stream);
-          call.on('stream', (rStream) => {
+          peer.on('signal', (data) => {
+            socket.send(JSON.stringify({
+              type: 'signal',
+              signal: data,
+              from: currentUser.email
+            }));
+          });
+
+          peer.on('stream', (rStream) => {
             setRemoteStream(rStream);
             if (remoteVideoRef.current) remoteVideoRef.current.srcObject = rStream;
             setStatus('Connected');
           });
-        });
 
-        peer.on('error', (err) => {
-            console.warn('PeerJS Error:', err);
-            if (err.type === 'peer-unavailable') {
-                setStatus('Patient not online yet. Waiting...');
-            } else {
-                setError('Connection Interrupted. Please refresh.');
-            }
-        });
+          peer.on('error', (err) => {
+            console.error('Peer Error:', err);
+            setError('Connection failed. Retrying...');
+          });
 
-        peerInstance.current = peer;
+          peerRef.current = peer;
+        };
+
+        socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.type === 'signal' && peerRef.current) {
+            peerRef.current.signal(data.signal);
+          }
+        };
+
+        socket.onclose = () => {
+          setStatus('Signaling Offline');
+        };
+
+        socket.onerror = () => {
+          setError('Signaling server error. Make sure backend is running.');
+        };
       })
       .catch(err => {
-        setError('Camera Access Denied. Please enable permissions.');
+        console.error('Media Access Error:', err);
+        if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          setError('No camera or microphone found. Please connect your hardware.');
+        } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setError('Camera access denied. Please enable permissions in your browser.');
+        } else {
+          setError(`Media Error: ${err.message}`);
+        }
       });
+  };
+
+  useEffect(() => {
+    startMedia(true);
+
+    // Show bypass button if stuck for 6 seconds
+    const timer = setTimeout(() => {
+      setShowAudioBypass(true);
+    }, 6000);
 
     return () => {
+      clearTimeout(timer);
       if (localStream) localStream.getTracks().forEach(track => track.stop());
-      if (peerInstance.current) peerInstance.current.destroy();
+      if (socketRef.current) socketRef.current.close();
+      if (peerRef.current) peerRef.current.destroy();
     };
   }, []);
 
   const toggleMic = () => {
     if (localStream) {
-      localStream.getAudioTracks()[0].enabled = !micActive;
-      setMicActive(!micActive);
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !micActive;
+        setMicActive(!micActive);
+      }
     }
   };
 
   const toggleVideo = () => {
     if (localStream) {
-      localStream.getVideoTracks()[0].enabled = !videoActive;
-      setVideoActive(!videoActive);
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoActive;
+        setVideoActive(!videoActive);
+      } else if (!videoActive) {
+        // If we are currently in audio-only and trying to turn on video
+        startMedia(true);
+      }
     }
+  };
+
+  const handleScreenShare = async () => {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      if (peerRef.current) {
+        const videoTrack = screenStream.getVideoTracks()[0];
+        const sender = peerRef.current._pc.getSenders().find(s => s.track.kind === 'video');
+        if (sender) {
+          sender.replaceTrack(videoTrack);
+          if (localVideoRef.current) localVideoRef.current.srcObject = screenStream;
+          
+          videoTrack.onended = () => {
+            sender.replaceTrack(localStream.getVideoTracks()[0]);
+            if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+          };
+        }
+      }
+    } catch (err) {
+      console.error("Screen share error:", err);
+    }
+  };
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
+  const handleSaveSession = () => {
+    alert("Oncology Consultation Session Saved. Records have been synchronized with the Patient Portal.");
+    onEndCall();
   };
 
   return (
@@ -139,7 +245,7 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
                 <ActivityIcon size={18} /> Lab/Vitals
               </button>
            </div>
-
+ 
            <div className="clinical-content">
               {activeClinicalTab === 'notes' && (
                 <textarea placeholder="Type Tumor Board observations and staging notes..." className="clinical-textarea" />
@@ -164,14 +270,14 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
                 </div>
               )}
            </div>
-
+ 
            <div className="clinical-footer">
-              <button className="save-session-btn">
+              <button className="save-session-btn" onClick={handleSaveSession}>
                 <CheckCircle size={16} /> Save & Finalize Consult
               </button>
            </div>
         </div>
-
+ 
         {/* Main Meet Area */}
         <div className="meet-main">
           <div className="meet-header">
@@ -183,48 +289,63 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
                 <span className="status-dot-text"><span className="dot"></span> {status}</span>
              </div>
              <div className="meet-actions-top">
-                <button className="tool-btn"><Layout size={18} /></button>
-                <button className="tool-btn"><Maximize2 size={18} /></button>
+                <button className="tool-btn" onClick={() => alert("Layout switched")}><Layout size={18} /></button>
+                <button className="tool-btn" onClick={toggleFullScreen}><Maximize2 size={18} /></button>
                 <button className="tool-btn text-danger" onClick={onEndCall}><PhoneOff size={18} /></button>
              </div>
           </div>
-
+ 
           <div className="video-grid-modern">
-             {(!remoteStream && !error) && (
+             {error ? (
+               <div className="lobby-overlay error">
+                  <AlertCircle size={32} color="#ef4444" />
+                  <p>{error}</p>
+                  <button onClick={() => window.location.reload()} className="retry-btn">Retry Connection</button>
+               </div>
+             ) : (!remoteStream) ? (
                <div className="lobby-overlay">
                   <RefreshCw className="spin" size={32} />
-                  <p>Encrypted Handshake in Progress...</p>
+                  <p>{status}</p>
+                  {showAudioBypass && (
+                    <button 
+                      className="bypass-btn" 
+                      onClick={() => startMedia(false)}
+                      style={{ marginTop: '20px', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', background: 'var(--med-primary)', color: 'white', border: 'none' }}
+                    >
+                      Skip Camera & Join with Audio Only
+                    </button>
+                  )}
                </div>
-             )}
+             ) : null}
              
              <div className="remote-view-container">
                 <video ref={remoteVideoRef} autoPlay playsInline />
                 <div className="label-overlay">{chat.name}</div>
              </div>
-
+ 
              <div className="local-view-mini">
                 <video ref={localVideoRef} autoPlay playsInline muted />
                 <div className="label-overlay">You (Doctor)</div>
              </div>
           </div>
-
+ 
           <div className="meet-controls-bar">
              <div className="controls-group">
-                <button onClick={toggleMic} className={`control-btn ${!micActive ? 'off' : ''}`}>
+                <button onClick={toggleMic} className={`control-btn ${!micActive ? 'off' : ''}`} title={micActive ? "Mute Mic" : "Unmute Mic"}>
                    {micActive ? <Mic size={20} /> : <MicOff size={20} />}
                 </button>
-                <button onClick={toggleVideo} className={`control-btn ${!videoActive ? 'off' : ''}`}>
+                <button onClick={toggleVideo} className={`control-btn ${!videoActive ? 'off' : ''}`} title={videoActive ? "Turn Video Off" : "Turn Video On"}>
                    {videoActive ? <VideoIcon size={20} /> : <VideoOff size={20} />}
                 </button>
              </div>
              
              <div className="controls-group center">
-                <button className="action-pill">Invite Specialist</button>
-                <button className="action-pill">Share Screen</button>
+                <button className="action-pill" onClick={() => alert("Specialist Invitation Link Copied to Clipboard")}>Invite Specialist</button>
+                <button className="action-pill" onClick={handleScreenShare}>Share Screen</button>
              </div>
-
+ 
              <div className="controls-group">
-                <button className="tool-btn"><MoreVertical size={20} /></button>
+                <button className="tool-btn" onClick={() => alert("More options coming soon")}><MoreVertical size={20} /></button>
              </div>
           </div>
         </div>

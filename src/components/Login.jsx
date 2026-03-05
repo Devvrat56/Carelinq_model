@@ -1,50 +1,209 @@
 import React, { useState } from 'react';
-import { Mail, ArrowRight, ShieldCheck, HeartPulse } from 'lucide-react';
+import { Mail, ArrowRight, ShieldCheck, Lock, Activity, ChevronRight, User, Stethoscope, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Login.css';
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('doctor'); // 'doctor' or 'patient'
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (email.trim()) {
-      onLogin(email.trim());
+    setError('');
+    
+    // Credentials logic
+    const isValidDoctor = role === 'doctor' && email === 'doctor@gmail.com' && password === 'test@123';
+    const isValidPatient = role === 'patient' && email === 'patient@gmail.com' && password === 'test@123';
+
+    if (isValidDoctor || isValidPatient) {
+      setIsLoading(true);
+      // Simulate a small delay for premium feel
+      setTimeout(() => {
+        onLogin(email.trim(), role);
+        setIsLoading(false);
+      }, 1000);
+    } else {
+      setError('Invalid credentials for selected role. Please check and try again.');
     }
   };
 
   return (
-    <div className="login-overlay medical">
-      <div className="login-card">
+    <div className="login-overlay">
+      <motion.div 
+        className="login-card"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      >
         <div className="login-header">
-          <div className="med-logo-container">
-            <img src="/oncology.svg" alt="Carelinq Logo" style={{ width: '56px', height: '56px' }} />
+          <motion.div 
+            className="med-logo-container"
+            style={{ 
+              background: role === 'doctor' 
+                ? 'linear-gradient(135deg, var(--med-primary), var(--med-primary-dark))' 
+                : 'linear-gradient(135deg, var(--med-accent), #059669)' 
+            }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {role === 'doctor' ? (
+              <Stethoscope size={40} color="white" strokeWidth={2.5} />
+            ) : (
+              <User size={40} color="white" strokeWidth={2.5} />
+            )}
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            {role === 'doctor' ? 'Carelinq Doctor' : 'Carelinq Patient'}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            {role === 'doctor' 
+              ? 'Oncology & Dermatology Specialized Telehealth' 
+              : 'Secure Patient Access & Medical History Portal'}
+          </motion.p>
+        </div>
+
+        <div className="role-switcher-container">
+          <div className={`role-switcher ${role}`}>
+            <div className="role-glider"></div>
+            <button 
+              type="button"
+              className={`role-btn ${role === 'doctor' ? 'active' : ''}`}
+              onClick={() => { setRole('doctor'); setError(''); }}
+            >
+              <Stethoscope size={16} /> Doctor
+            </button>
+            <button 
+              type="button"
+              className={`role-btn ${role === 'patient' ? 'active' : ''}`}
+              onClick={() => { setRole('patient'); setError(''); }}
+            >
+              <User size={16} /> Patient
+            </button>
           </div>
-          <h1>Carelinq Portal</h1>
-          <p>Oncology-Specialized Telehealth & Secure Scribe</p>
         </div>
         
         <form onSubmit={handleSubmit} className="login-form">
-          <div className="input-group">
-            <Mail size={20} className="input-icon" />
-            <input 
-              type="email" 
-              placeholder="doctor@hospital.com" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.div 
+                className="error-message"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <AlertCircle size={16} /> {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.div 
+            className="input-container"
+            key={role + "-email"} // Change key to trigger re-animation
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <label>{role === 'doctor' ? 'Professional Email' : 'Patient ID / Email'}</label>
+            <div className="input-group">
+              <Mail size={18} className="input-icon" />
+              <input 
+                type="email" 
+                placeholder={role === 'doctor' ? 'doctor@hospital.com' : 'patient@email.com'} 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+          </motion.div>
+
+          <motion.div 
+            className="input-container"
+            key={role + "-pass"}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <label>Secure Passphrase</label>
+            <div className="input-group">
+              <Lock size={18} className="input-icon" />
+              <input 
+                type="password" 
+                placeholder="••••••••" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+            </div>
+          </motion.div>
+
+          <div className="form-options">
+            <label className="remember-me">
+              <input type="checkbox" />
+              <span>Remember me</span>
+            </label>
+            <a href="#" className="forgot-password">Forgot?</a>
           </div>
           
-          <button type="submit" className="login-btn med-btn">
-            Enter Dashboard <ArrowRight size={18} />
-          </button>
+          <motion.button 
+            type="submit" 
+            className="login-btn"
+            style={{ 
+              background: role === 'doctor' 
+                ? 'linear-gradient(135deg, var(--med-primary), var(--med-primary-dark))' 
+                : 'linear-gradient(135deg, var(--med-accent), #059669)',
+              boxShadow: role === 'doctor'
+                ? '0 10px 15px -3px rgba(14, 165, 233, 0.4)'
+                : '0 10px 15px -3px rgba(16, 185, 129, 0.4)'
+            }}
+            disabled={isLoading}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            {isLoading ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              >
+                <Activity size={20} />
+              </motion.div>
+            ) : (
+              <>
+                {role === 'doctor' ? 'Access Secure Dashboard' : 'Open Patient Portal'} <ArrowRight size={18} />
+              </>
+            )}
+          </motion.button>
         </form>
 
-        <div className="login-footer">
-          <ShieldCheck size={14} color="#10b981" />
-          <span>HIPAA-Compliant Encrypted Channel Active</span>
-        </div>
-      </div>
+        <motion.div 
+          className="login-footer"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <div className="trust-badge">
+            <ShieldCheck size={16} />
+            <span>HIPAA-Compliant Protocol Active</span>
+          </div>
+          <ChevronRight size={14} color="#334155" />
+          <span>v2.4.1</span>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

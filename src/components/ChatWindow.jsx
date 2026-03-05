@@ -20,7 +20,7 @@ import {
 import EmojiPicker from 'emoji-picker-react';
 import './ChatWindow.css';
 
-const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }) => {
+const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList, role }) => {
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -143,7 +143,6 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }
 
   const onEmojiClick = (emojiObject) => {
     setInputText(prev => prev + emojiObject.emoji);
-    // Optionally focus the textarea back
   };
 
   const handleConfirmSend = () => {
@@ -175,8 +174,10 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }
           <div className="empty-icon-circle medical">
             <Shield size={48} color="var(--med-primary)" />
           </div>
-          <h2>Secure Healthcare Messenger</h2>
-          <p>Please select a consultation or add a patient using their email address to begin a secure real-time session.</p>
+          <h2>{role === 'doctor' ? 'Secure Healthcare Messenger' : 'Global Patient Health Connect'}</h2>
+          <p>{role === 'doctor' 
+            ? 'Please select a consultation or add a patient using their email address to begin a secure real-time session.'
+            : 'Select a clinical thread to message your doctor or join a scheduled telehealth session.'}</p>
         </div>
       </div>
     );
@@ -195,22 +196,32 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }
           </div>
           <div>
             <h3>{chat.name}</h3>
-            <span className="status">Patient • Secure Channel</span>
+            <span className="status">{role === 'doctor' ? 'Patient' : 'Healthcare Provider'} • Secure Channel</span>
           </div>
         </div>
         <div className="chat-header-actions">
-          <button className="med-action-btn start-meet-btn" onClick={() => onStartCall('video')}>
-            <Stethoscope size={18} />
-            <span>Start Medical Session</span>
-          </button>
-          <div className="divider"></div>
-          <button className="med-action-btn" onClick={() => onStartCall('audio')} title="Audio Call">
-            <Phone size={20} />
-          </button>
-          <button className="med-action-btn" onClick={() => onStartCall('video')} title="Video Consult">
-            <VideoIcon size={20} />
-          </button>
-          <button className="med-action-btn" title="Case Details">
+          {role === 'doctor' ? (
+            <>
+              <button className="med-action-btn start-meet-btn" onClick={() => onStartCall('video')}>
+                <Stethoscope size={18} />
+                <span>Start Medical Session</span>
+              </button>
+              <div className="divider"></div>
+              <button className="med-action-btn" onClick={() => onStartCall('audio')} title="Audio Call">
+                <Phone size={20} />
+              </button>
+              <button className="med-action-btn" onClick={() => onStartCall('video')} title="Video Consult">
+                <VideoIcon size={20} />
+              </button>
+            </>
+          ) : (
+            <button className="med-action-btn start-meet-btn patient-btn" onClick={() => onStartCall('video')}>
+              <VideoIcon size={18} />
+              <span>Connect with Physician</span>
+            </button>
+          )}
+          
+          <button className="med-action-btn" title="Details">
             <Info size={20} />
           </button>
           <button className="med-action-btn">
@@ -231,7 +242,6 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }
           messages.map((msg) => (
             <div key={msg.id} className={`message-wrapper ${msg.sender} ${msg.isSystem ? 'system' : ''}`}>
               <div className="message-bubble">
-                {/* File Attachment Rendering */}
                 {msg.fileData && (
                    <div className="attachment-preview">
                      {msg.fileType?.startsWith('image/') ? (
@@ -254,28 +264,26 @@ const ChatWindow = ({ chat, messages, onSendMessage, onStartCall, onBackToList }
                    </div>
                 )}
                 
-                {/* Render Text with Link Support */}
-                <p>
-                   {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => 
-                    part.match(/^https?:\/\//) ? (
-                      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="chat-link">
-                        {part}
-                      </a>
-                    ) : part
-                  )}
-                </p>
-
-                {/* Specialized 'Join Consult' Button for Jitsi Links */}
-                {msg.isSystem && msg.text.includes('meet.jit.si') && (
-                  <button 
-                    className="join-meeting-pill"
-                    onClick={() => {
-                        const room = msg.text.split('meet.jit.si/')[1];
-                        window.open(`https://meet.jit.si/${room}`, '_blank');
-                    }}
-                  >
-                    Enter Consultation Room
-                  </button>
+                {msg.isSystem && msg.text.startsWith('JOIN_CALL_REQUEST:') ? (
+                  <div className="join-call-system-msg">
+                    <p>🚑 Secure {msg.text.split(':')[1]} Consultation started.</p>
+                    <button 
+                      className="join-meeting-pill"
+                      onClick={() => onStartCall(msg.text.split(':')[1].toLowerCase())}
+                    >
+                      Join Secure Session
+                    </button>
+                  </div>
+                ) : (
+                  <p>
+                    {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => 
+                      part.match(/^https?:\/\//) ? (
+                        <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="chat-link">
+                          {part}
+                        </a>
+                      ) : part
+                    )}
+                  </p>
                 )}
                 
                 <div className="msg-meta">

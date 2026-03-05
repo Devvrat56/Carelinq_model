@@ -324,6 +324,132 @@
     color: #ef4444;
 }
 
+.tele-main-card.patient-theme {
+    background: linear-gradient(135deg, var(--med-accent) 0%, #059669 100%);
+    box-shadow: 0 20px 40px rgba(5, 150, 105, 0.2);
+}
+
+.start-btn.patient {
+    color: var(--med-accent);
+}
+
+.doc-avatar-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.status-tag {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.status-tag.online {
+    background: rgba(22, 163, 74, 0.1);
+    color: #16a34a;
+}
+
+.status-tag.offline {
+    background: rgba(148, 163, 184, 0.1);
+    color: #64748b;
+}
+
+.connect-btn {
+    background: var(--med-primary);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.connect-btn.disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.tele-setup-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.setup-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.setup-card {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s;
+}
+
+.setup-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.setup-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.setup-icon.blue {
+    background: #3b82f6;
+}
+
+.setup-icon.green {
+    background: #16a34a;
+}
+
+.setup-icon.purple {
+    background: #8b5cf6;
+}
+
+.setup-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.setup-info strong {
+    font-size: 14px;
+    color: var(--text-main);
+}
+
+.setup-info span {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.setup-status {
+    font-size: 11px;
+    font-weight: 800;
+    color: #16a34a;
+    background: rgba(22, 163, 74, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
 @media (max-width: 1024px) {
     .tele-grid {
         grid-template-columns: 1fr;

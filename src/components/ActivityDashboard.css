@@ -1,0 +1,569 @@
+.activity-dashboard-v2 {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background: #f8fafc;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+}
+
+/* Sidebar General */
+.activity-sidebar {
+    width: 340px;
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    flex-shrink: 0;
+}
+
+.side-profile-card {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.side-avatar-box {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.side-avatar-box img {
+    width: 110px;
+    height: 110px;
+    border-radius: 40px;
+    object-fit: cover;
+    border: 4px solid #f1f5f9;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.side-status-dot {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    background: #10b981;
+    border: 4px solid white;
+    border-radius: 50%;
+}
+
+.side-profile-card h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.side-id-tag {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Clinical Tags (Doctor View) */
+.clinical-tags {
+    display: flex;
+    gap: 8px;
+}
+
+.c-tag {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.c-tag.oncology {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.c-tag.dermatology {
+    background: #dbeafe;
+    color: #3b82f6;
+}
+
+/* Care Rating (Patient View) */
+.care-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fefce8;
+    color: #ca8a04;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.text-gold {
+    color: #eab308;
+}
+
+/* Side details list */
+.side-details-list h3 {
+    font-size: 11px;
+    font-weight: 900;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 24px;
+}
+
+.s-detail-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+}
+
+.s-detail-item label {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    margin-bottom: 2px;
+}
+
+.s-detail-item span {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.text-red {
+    color: #ef4444;
+}
+
+.text-blue {
+    color: #3b82f6;
+}
+
+.text-orange {
+    color: #f97316;
+}
+
+.text-green {
+    color: #10b981;
+}
+
+.sidebar-action-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.side-action-btn {
+    padding: 14px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.side-action-btn.primary {
+    background: #0f172a;
+    color: white;
+}
+
+.side-action-btn.secondary {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.side-action-btn.patient-btn {
+    background: #10b981;
+    color: white;
+    margin-top: auto;
+}
+
+/* Main Workspace */
+.activity-main {
+    flex-grow: 1;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: 100%;
+}
+
+.vitals-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.v-strip-box {
+    background: white;
+    padding: 24px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.v-strip-box svg {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 14px;
+}
+
+/* Doctor Color Theme */
+.doctor-view .v-strip-box.heart svg {
+    color: #0ea5e9;
+    background: #e0f2fe;
+}
+
+.doctor-view .v-strip-box.oxygen svg {
+    color: #3b82f6;
+    background: #dbeafe;
+}
+
+.doctor-view .v-strip-box.activity svg {
+    color: #10b981;
+    background: #d1fae5;
+}
+
+.doctor-view .v-strip-box.temp svg {
+    color: #a855f7;
+    background: #f3e8ff;
+}
+
+/* Patient Color Theme */
+.patient-view .v-strip-box.heart-p svg {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.patient-view .v-strip-box.oxygen-p svg {
+    color: #06b6d4;
+    background: #cffafe;
+}
+
+.patient-view .v-strip-box.steps-p svg {
+    color: #f59e0b;
+    background: #fef3c7;
+}
+
+.patient-view .v-strip-box.mood-p svg {
+    color: #ec4899;
+    background: #fce7f3;
+}
+
+.v-strip-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.v-lbl {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.v-val {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.v-val small {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* Trends Section */
+.trends-section {
+    background: white;
+    padding: 32px;
+    border-radius: 28px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #f1f5f9;
+}
+
+.trends-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+}
+
+.t-title-box h3 {
+    font-size: 20px;
+    font-weight: 900;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.t-title-box p {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.t-status {
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.t-status.finalized {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.t-status.wellness {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.trends-vis {
+    flex-grow: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding-bottom: 40px;
+}
+
+.vis-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.vis-bar {
+    width: 32px;
+    border-radius: 10px 10px 4px 4px;
+    position: relative;
+    cursor: pointer;
+}
+
+.doctor-bar {
+    background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%);
+}
+
+.patient-bar {
+    background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+}
+
+.vis-bar:hover .vis-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+.vis-tooltip {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f172a;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    opacity: 0;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+}
+
+.vis-lbl {
+    font-size: 13px;
+    font-weight: 800;
+    color: #94a3b8;
+}
+
+/* Bottom Grid */
+.bottom-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+}
+
+.meta-timeline {
+    background: white;
+    padding: 24px;
+    border-radius: 24px;
+    border: 1px solid #f1f5f9;
+}
+
+.meta-timeline h3 {
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 20px;
+    color: #0f172a;
+}
+
+.m-timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    border-radius: 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.m-timeline-item:hover {
+    background: #f8fafc;
+}
+
+.m-t-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.m-t-dot.success {
+    background: #10b981;
+}
+
+.m-t-dot.alert {
+    background: #f59e0b;
+}
+
+.m-t-dot.primary {
+    background: #3b82f6;
+}
+
+.m-t-dot.info {
+    background: #6366f1;
+}
+
+.m-t-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.m-t-info strong {
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 800;
+}
+
+.m-t-info span {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* Security Cards */
+.meta-security-card {
+    padding: 32px;
+    border-radius: 28px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.meta-security-card.doctor-card {
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+}
+
+.meta-security-card.patient-card {
+    background: linear-gradient(135deg, #065f46 0%, #059669 100%);
+}
+
+.sec-icon {
+    margin-bottom: 16px;
+    opacity: 0.9;
+}
+
+.doctor-card .sec-icon {
+    color: #f59e0b;
+}
+
+.patient-card .sec-icon {
+    color: #fcd34d;
+}
+
+.meta-security-card h4 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.meta-security-card p {
+    font-size: 13px;
+    opacity: 0.8;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.meta-security-card strong {
+    color: white;
+    text-decoration: underline;
+}
+
+.last-sync {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.6;
+}
+
+@media (max-height: 850px) {
+    .activity-sidebar {
+        padding: 24px;
+        gap: 20px;
+        width: 300px;
+    }
+
+    .side-avatar-box img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .activity-main {
+        padding: 20px;
+        gap: 16px;
+    }
+
+    .v-strip-box {
+        padding: 16px;
+    }
+
+    .trends-section {
+        padding: 24px;
+    }
+
+    .trends-vis {
+        height: 160px;
+    }
+}

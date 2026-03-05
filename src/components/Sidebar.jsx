@@ -11,14 +11,23 @@ import {
 } from 'lucide-react';
 import './Sidebar.css';
 
-const Sidebar = ({ activeTab, onTabChange }) => {
-  const mainItems = [
+const Sidebar = ({ activeTab, onTabChange, role }) => {
+  const doctorItems = [
     { icon: Activity, label: 'Activity', id: 'activity' },
-    { icon: MessageSquare, label: 'Consults', id: 'consults' },
+    { icon: MessageSquare, label: 'Chat Linq', id: 'consults' },
     { icon: Users, label: 'Patients', id: 'patients' },
     { icon: ClipboardList, label: 'Records', id: 'records' },
     { icon: Video, label: 'Telehealth', id: 'telehealth' },
   ];
+
+  const patientItems = [
+    { icon: Activity, label: 'Health Status', id: 'activity' },
+    { icon: MessageSquare, label: 'Chat Linq', id: 'consults' },
+    { icon: ClipboardList, label: 'My Records', id: 'records' },
+    { icon: Video, label: 'Join Call', id: 'telehealth' },
+  ];
+
+  const mainItems = role === 'doctor' ? doctorItems : patientItems;
 
   return (
     <div className="sidebar">
@@ -40,13 +49,15 @@ const Sidebar = ({ activeTab, onTabChange }) => {
             </div>
           );
         })}
-        <div 
-          className={`sidebar-item ${activeTab === 'more' ? 'active' : ''}`}
-          onClick={() => onTabChange('more')}
-        >
-          <MoreHorizontal size={22} />
-          <span>More</span>
-        </div>
+        {role === 'doctor' && (
+          <div 
+            className={`sidebar-item ${activeTab === 'more' ? 'active' : ''}`}
+            onClick={() => onTabChange('more')}
+          >
+            <MoreHorizontal size={22} />
+            <span>More</span>
+          </div>
+        )}
       </div>
       <div className="sidebar-bottom">
         <div 
@@ -54,7 +65,7 @@ const Sidebar = ({ activeTab, onTabChange }) => {
           onClick={() => onTabChange('settings')}
         >
           <Settings size={22} />
-          <span>Settings</span>
+          <span>{role === 'doctor' ? 'Admin Portal' : 'My Profile'}</span>
         </div>
       </div>
     </div>

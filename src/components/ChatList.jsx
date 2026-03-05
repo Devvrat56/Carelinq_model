@@ -19,13 +19,15 @@ const ChatList = ({ activeChat, onSelectChat, chats, onAddCandidate }) => {
     <div className="chat-list medical">
       <div className="chat-list-header">
         <div className="chat-list-title">
-          <h2>Consultations</h2>
-          <div className="header-actions">
-            <button className="add-candidate-btn med-add-btn" onClick={() => setShowAdd(!showAdd)}>
-              <UserPlus size={18} />
-              <span>Add Patient</span>
-            </button>
-          </div>
+          <h2>Chat Linq</h2>
+          {onAddCandidate && (
+            <div className="header-actions">
+              <button className="add-candidate-btn med-add-btn" onClick={() => setShowAdd(!showAdd)}>
+                <UserPlus size={18} />
+                <span>Add Patient</span>
+              </button>
+            </div>
+          )}
         </div>
         
         {showAdd ? (

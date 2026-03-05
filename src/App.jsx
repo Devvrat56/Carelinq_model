@@ -7,8 +7,11 @@ import Login from './components/Login';
 import PatientDirectory from './components/PatientDirectory';
 import TelehealthDashboard from './components/TelehealthDashboard';
 import MedicalRecords from './components/MedicalRecords';
+import ActivityDashboard from './components/ActivityDashboard';
+import UserProfile from './components/UserProfile';
+import AIChatbot from './components/AIChatbot';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Stethoscope, Phone, X, Check, Bell, Mail, RefreshCw, User, Thermometer, FileText, ShieldAlert, Activity } from 'lucide-react';
+import { Stethoscope, Phone, X, Check, Bell, Mail, RefreshCw, User, Thermometer, FileText, ShieldAlert, Activity, Sparkles } from 'lucide-react';
 import Gun from 'gun';
 import emailjs from '@emailjs/browser';
 import './App.css';
@@ -42,7 +45,8 @@ function App() {
     return saved ? JSON.parse(saved) : INITIAL_CHATS;
   });
 
-  const [activeTab, setActiveTab] = useState('consults');
+  const [activeTab, setActiveTab] = useState('activity');
+  const [showAIChat, setShowAIChat] = useState(false);
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState({});
   const [isCalling, setIsCalling] = useState(false);
@@ -99,8 +103,14 @@ function App() {
     // 2. SIGNALING: Listen for Call Signals (Video/Audio)
     gun.get(`carelinq_signal_${mySafeEmail}`).on((data) => {
       if (data && data.fromEmail && (Date.now() - data.timestamp < 20000)) {
-        // PLAY RINGING SOUND (Simulated with a visual pulse)
-        setIncomingCall(data);
+        // Only alert if we haven't already shown this specific call
+        if (!incomingCall || incomingCall.timestamp !== data.timestamp) {
+          setIncomingCall(data);
+          // Native browser alert to grab attention
+          setTimeout(() => {
+            alert(`🏥 ALERT: Incoming Secure ${data.type.toUpperCase()} Consult from ${data.fromName || data.fromEmail}`);
+          }, 100);
+        }
       }
     });
   }, [currentUser]);
@@ -172,13 +182,10 @@ function App() {
     });
 
     // 2. Post a direct invite in the chat
-    const portalLink = window.location.origin;
-    onSendMessage(activeChat.id, `🚑 Secure P2P ${type} session started. Please open the CareLinq Portal to join.`, true);
+    onSendMessage(activeChat.id, `JOIN_CALL_REQUEST:${type.toUpperCase()}`, true);
     
-    // 3. Email fallback (Optional but good for notifications)
-    const subject = `Urgent: Secure P2P Consult - ${currentUser.name}`;
-    const body = `Hello, ${currentUser.name} has started a secure P2P medical consultation. Please log into your CareLinq Portal at ${portalLink} to connect safely.`;
-    window.open(`mailto:${activeChat.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    // 3. Optional: Background Notification
+    console.log(`Call initiated to ${activeChat.email}. Signaling via P2P relay...`);
 
     setCallType(type);
     setIsCalling(true);
@@ -201,7 +208,13 @@ function App() {
     setIncomingCall(null);
   };
 
-  if (!currentUser) return <Login onLogin={(email) => setCurrentUser({ email, name: email.split('@')[0], id: email.replace(/[@.]/g, '_'), avatar: `https://i.pravatar.cc/150?u=${email.replace(/[@.]/g, '_')}` })} />;
+  if (!currentUser) return <Login onLogin={(email, role) => setCurrentUser({ 
+    email, 
+    name: email.split('@')[0], 
+    id: email.replace(/[@.]/g, '_'), 
+    role: role || 'doctor',
+    avatar: `https://i.pravatar.cc/150?u=${email.replace(/[@.]/g, '_')}` 
+  })} />;
 
   return (
     <div className={`app-container carelinq-theme ${showChatWindowOnMobile ? 'chat-window-active' : ''}`}>
@@ -217,14 +230,14 @@ function App() {
           >
             <div className="status-item">
               <Stethoscope size={16} color="var(--med-primary)" />
-              <span>Oncology Specialist: <strong>{currentUser.email}</strong> <small>({APP_VERSION})</small></span>
+              <span>{currentUser.role === 'doctor' ? 'Oncology & Dermatology Specialist' : 'Patient'}: <strong>{currentUser.email}</strong> <small>({APP_VERSION})</small></span>
               <button className="logout-btn" onClick={() => setCurrentUser(null)}>Restart Session</button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} role={currentUser.role} />
       <div className="main-content">
         {activeTab === 'consults' ? (
           <>
@@ -233,11 +246,11 @@ function App() {
                 activeChat={activeChat?.id} 
                 onSelectChat={handleSelectChat} 
                 chats={chats}
-                onAddCandidate={(email) => {
+                onAddCandidate={currentUser.role === 'doctor' ? (email) => {
                   const id = email.replace(/[@.]/g, '_');
                   if (chats.find(c => c.id === id)) return;
                   setChats([{ id, name: email.split('@')[0], email, avatar: `https://i.pravatar.cc/150?u=${id}`, lastMsg: 'Consultation Created' }, ...chats]);
-                }}
+                } : null}
               />
             </div>
             <div className={`chat-window-wrapper ${!showChatWindowOnMobile ? 'hide-mobile' : ''}`}>
@@ -247,91 +260,15 @@ function App() {
                 onSendMessage={(t, s, f) => activeChat && onSendMessage(activeChat.id, t, s, f)}
                 onStartCall={handleStartCall} 
                 onBackToList={handleBackToList}
+                role={currentUser.role}
               />
             </div>
           </>
         ) : (
-          <div className="placeholder-view">
-            <div className="placeholder-content" style={{ maxWidth: '900px' }}>
+          <div className={`placeholder-view tab-${activeTab}`}>
+            <div className="placeholder-content">
               {activeTab === 'activity' && (
-                <>
-                  <h2>Patient Activity & Details</h2>
-                  <p>Comprehensive overview of current patient status and medical history.</p>
-                  
-                  <div className="patient-details-grid">
-                    {/* Basic Info Card */}
-                    <div className="details-card">
-                      <h3><User size={18} /> Basic Information</h3>
-                      <div className="patient-info-row">
-                        <span className="label">Full Name</span>
-                        <span className="value">John Doe</span>
-                      </div>
-                      <div className="patient-info-row">
-                        <span className="label">Age / Gender</span>
-                        <span className="value">42 / Male</span>
-                      </div>
-                      <div className="patient-info-row">
-                        <span className="label">Blood Group</span>
-                        <span className="value">O Positive</span>
-                      </div>
-                      <div className="patient-info-row">
-                        <span className="label">Patient ID</span>
-                        <span className="value">#CL-99234</span>
-                      </div>
-                    </div>
-
-                    {/* Vitals Card */}
-                    <div className="details-card">
-                      <h3><Thermometer size={18} /> Live Vitals</h3>
-                      <div className="patient-info-row">
-                        <span className="label">Heart Rate</span>
-                        <span className="value">72 BPM <span className="vitals-badge">Normal</span></span>
-                      </div>
-                      <div className="patient-info-row">
-                        <span className="label">Blood Pressure</span>
-                        <span className="value">120/80 <span className="vitals-badge">Normal</span></span>
-                      </div>
-                      <div className="patient-info-row">
-                        <span className="label">SpO2</span>
-                        <span className="value">98% <span className="vitals-badge">Optimal</span></span>
-                      </div>
-                      <div className="patient-info-row">
-                        <span className="label">Temperature</span>
-                        <span className="value">98.6°F <span className="vitals-badge">Normal</span></span>
-                      </div>
-                    </div>
-
-                    {/* Recent Diagnosis Card */}
-                    <div className="details-card">
-                      <h3><FileText size={18} /> Recent Diagnosis</h3>
-                      <div className="patient-info-row">
-                        <span className="label">Condition</span>
-                        <span className="value">Type 2 Diabetes</span>
-                      </div>
-                      <div className="patient-info-row">
-                        <span className="label">Last Visit</span>
-                        <span className="value">Oct 15, 2025</span>
-                      </div>
-                      <div className="patient-info-row">
-                        <span className="label">Medication</span>
-                        <span className="value">Metformin 500mg</span>
-                      </div>
-                    </div>
-
-                    {/* Alerts Card */}
-                    <div className="details-card">
-                      <h3><ShieldAlert size={18} /> Critical Alerts</h3>
-                      <div className="patient-info-row">
-                        <span className="label">Allergies</span>
-                        <span className="value" style={{ color: '#ef4444' }}>Penicillin, Peanuts</span>
-                      </div>
-                      <div className="patient-info-row">
-                        <span className="label">Risk Level</span>
-                        <span className="value"><span className="vitals-badge warning">Moderate</span></span>
-                      </div>
-                    </div>
-                  </div>
-                </>
+                <ActivityDashboard role={currentUser.role} />
               )}
               {activeTab === 'patients' && (
                 <PatientDirectory />
@@ -340,19 +277,10 @@ function App() {
                 <MedicalRecords />
               )}
               {activeTab === 'telehealth' && (
-                <TelehealthDashboard onStartCall={handleStartCall} />
+                <TelehealthDashboard onStartCall={handleStartCall} role={currentUser.role} />
               )}
               {activeTab === 'settings' && (
-                <>
-                  <h2>Oncology Patient Registry</h2>
-                  <p>Comprehensive cancer care management and longitudinal history.</p>
-                  <div className="search-bar-placeholder">Search Oncology Patients...</div>
-                  <div className="settings-options">
-                    <div className="setting-row">Profile Information</div>
-                    <div className="setting-row">Privacy & Security</div>
-                    <div className="setting-row">Carelinq Subscription</div>
-                  </div>
-                </>
+                <UserProfile user={currentUser} onLogout={() => setCurrentUser(null)} />
               )}
               {activeTab === 'more' && (
                 <>
@@ -387,6 +315,22 @@ function App() {
       <AnimatePresence>
         {isCalling && <VideoCall chat={activeChat} currentUser={currentUser} onEndCall={() => setIsCalling(false)} />}
       </AnimatePresence>
+      {currentUser && currentUser.role === 'patient' && (
+        <>
+          <div className="ai-floating-toggle" onClick={() => setShowAIChat(true)}>
+             <Sparkles size={28} />
+          </div>
+          <AnimatePresence>
+            {showAIChat && (
+              <AIChatbot 
+                isOpen={showAIChat} 
+                onClose={() => setShowAIChat(false)} 
+                user={currentUser}
+              />
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

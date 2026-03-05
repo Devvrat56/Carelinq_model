@@ -325,6 +325,27 @@
     border-radius: 20px;
     font-size: 13px;
     font-weight: 700;
+    cursor: pointer;
+}
+
+.control-btn {
+    cursor: pointer;
+}
+
+.tool-btn {
+    cursor: pointer;
+}
+
+.save-session-btn {
+    cursor: pointer;
+}
+
+.clinical-tabs button {
+    cursor: pointer;
+}
+
+.bypass-btn {
+    cursor: pointer;
 }
 
 @media (max-width: 1024px) {
