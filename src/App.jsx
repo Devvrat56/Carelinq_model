@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Stethoscope, Phone, X, Check, Bell, Mail, RefreshCw, User, Thermometer, FileText, ShieldAlert, Activity, Sparkles } from 'lucide-react';
 import Gun from 'gun';
 import emailjs from '@emailjs/browser';
+import { API_BASE_URL, WS_BASE_URL } from './config';
 import './App.css';
 
 // Gun.js Configuration
@@ -110,7 +111,7 @@ function App() {
     if (!currentUser) return;
 
     const connectWS = () => {
-      const socket = new WebSocket('ws://localhost:8080');
+      const socket = new WebSocket(WS_BASE_URL);
       socketRef.current = socket;
 
       socket.onopen = () => {
@@ -274,7 +275,7 @@ function App() {
 
     // LOG CONSULT REQUEST TO MONGODB
     try {
-      fetch('http://localhost:5000/api/medical/save', {
+      fetch(`${API_BASE_URL}/api/medical/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -18,6 +18,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '../config';
 import './MedicalRecords.css';
 
 // Initial state for fallback if backend is empty
@@ -36,7 +37,7 @@ const MedicalRecords = ({ user }) => {
       setIsLoading(true);
       try {
         // Fetch specific records for the logged in user from PostgreSQL via Backend
-        const response = await fetch(`http://localhost:5000/api/records/${user.email}`);
+        const response = await fetch(`${API_BASE_URL}/api/records/${user.email}`);
         if (response.ok) {
           const data = await response.json();
           setRecords(data);

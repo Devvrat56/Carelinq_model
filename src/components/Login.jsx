@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, ArrowRight, ShieldCheck, Lock, Activity, ChevronRight, User, Stethoscope, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '../config';
 import './Login.css';
 
 const Login = ({ onLogin }) => {
@@ -21,7 +22,7 @@ const Login = ({ onLogin }) => {
     
     try {
       // In a real scenario, you would point this to your backend API URL
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +40,7 @@ const Login = ({ onLogin }) => {
         // Successful login
         // Log activity to MongoDB
         try {
-          await fetch('http://localhost:5000/api/timestamp/log', {
+          await fetch(`${API_BASE_URL}/api/timestamp/log`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

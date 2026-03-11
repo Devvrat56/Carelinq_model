@@ -13,6 +13,7 @@ import {
   Paperclip
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '../config';
 import './AIChatbot.css';
 
 const AIChatbot = ({ isOpen, onClose, user }) => {
@@ -63,7 +64,7 @@ const AIChatbot = ({ isOpen, onClose, user }) => {
 
       // SAVE TO MONGODB
       try {
-        await fetch('http://localhost:5000/api/chatbot/save', {
+        await fetch(`${API_BASE_URL}/api/chatbot/save`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

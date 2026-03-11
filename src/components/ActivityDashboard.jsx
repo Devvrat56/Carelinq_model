@@ -22,6 +22,7 @@ import {
   Wind
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { API_BASE_URL } from '../config';
 import './ActivityDashboard.css';
 
 const ActivityDashboard = ({ role, user }) => {
@@ -33,7 +34,7 @@ const ActivityDashboard = ({ role, user }) => {
     if (!isDoctor && user?.email) {
       const fetchHealth = async () => {
         try {
-          const response = await fetch(`http://localhost:5000/api/health-status/${user.email}`);
+          const response = await fetch(`${API_BASE_URL}/api/health-status/${user.email}`);
           if (response.ok) {
             const data = await response.json();
             setHealthStats(data);

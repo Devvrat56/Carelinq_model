@@ -6,6 +6,7 @@ import {
   Maximize2, Layout, MoreVertical, Search, CheckCircle
 } from 'lucide-react';
 import Peer from 'simple-peer';
+import { API_BASE_URL, WS_BASE_URL } from '../config';
 import './VideoCall.css';
 
 const VideoCall = ({ chat, currentUser, onEndCall, sessionMessages, roomID }) => {
@@ -64,7 +65,7 @@ const VideoCall = ({ chat, currentUser, onEndCall, sessionMessages, roomID }) =>
         }
 
         // 2. Setup WebSocket Signaling
-        const socket = new WebSocket('ws://localhost:8080');
+        const socket = new WebSocket(WS_BASE_URL);
         socketRef.current = socket;
 
         const roomId = roomID || [currentUser.email, chat.email].sort().join('--');
@@ -237,7 +238,7 @@ const VideoCall = ({ chat, currentUser, onEndCall, sessionMessages, roomID }) =>
   const handleSaveSession = async () => {
     // SAVE TO MONGODB (Specialist_portal -> medical)
     try {
-      await fetch('http://localhost:5000/api/medical/save', {
+      await fetch(`${API_BASE_URL}/api/medical/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -252,7 +253,7 @@ const VideoCall = ({ chat, currentUser, onEndCall, sessionMessages, roomID }) =>
         })
       });
 
-      await fetch('http://localhost:5000/api/timestamp/log', {
+      await fetch(`${API_BASE_URL}/api/timestamp/log`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
