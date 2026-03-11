@@ -19,13 +19,7 @@ import './App.css';
 // Gun.js Configuration
 
 const gun = Gun({
-  peers: [
-    'https://gun-manhattan.herokuapp.com/gun',
-    'https://gun-us.herokuapp.com/gun',
-    'https://gun-eu.herokuapp.com/gun',
-    'https://peer.wall.org/gun',
-    'https://gunjs.herokuapp.com/gun'
-  ]
+  peers: [] // Using local storage only to prevent connection errors
 });
 
 const APP_VERSION = "OncoPortal v2.4.1";
@@ -54,12 +48,46 @@ function App() {
   const [incomingCall, setIncomingCall] = useState(null);
   const [showChatWindowOnMobile, setShowChatWindowOnMobile] = useState(false);
   const [showStatus, setShowStatus] = useState(true);
+  const [activeRoomID, setActiveRoomID] = useState(null);
+  const socketRef = useRef(null);
 
   // Persistence
   useEffect(() => {
-    if (currentUser) localStorage.setItem('medichat_user', JSON.stringify(currentUser));
+    if (currentUser) {
+      localStorage.setItem('medichat_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('medichat_user');
+    }
     localStorage.setItem('medichat_chats', JSON.stringify(chats));
   }, [currentUser, chats]);
+
+  // Stable Cross-tab Sync Listener (DISABLED for independent testing)
+  useEffect(() => {
+    // We are disabling this so tab 1 can be Doctor and tab 2 can be Patient
+    /*
+    const channel = new BroadcastChannel('medichat_auth');
+    channel.onmessage = (event) => {
+      if (event.data.type === 'LOGIN_SYNC') {
+        setCurrentUser(event.data.user);
+      } else if (event.data.type === 'LOGOUT_SYNC') {
+        setCurrentUser(null);
+      }
+    };
+    return () => channel.close();
+    */
+  }, []);
+
+  const handleLogin = (userData) => {
+    const finalUser = { 
+      ...userData,
+      avatar: userData.avatar || `https://i.pravatar.cc/150?u=${userData.email.replace(/[@.]/g, '_')}` 
+    };
+    setCurrentUser(finalUser);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+  };
 
   // Handle active chat selection and toggle view on mobile
   const handleSelectChat = (chat) => {
@@ -76,6 +104,46 @@ function App() {
     const statusTimer = setTimeout(() => setShowStatus(false), 4000);
     return () => clearTimeout(statusTimer);
   }, []);
+
+  // --- WEB SOCKET SIGNALING ---
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const connectWS = () => {
+      const socket = new WebSocket('ws://localhost:8080');
+      socketRef.current = socket;
+
+      socket.onopen = () => {
+        console.log("Connected to Signaling Server");
+        socket.send(JSON.stringify({ type: 'identify', email: currentUser.email }));
+      };
+
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'incoming-call') {
+          console.log("🏥 Incoming WebSocket Call:", data);
+          setIncomingCall({
+            fromEmail: data.fromEmail,
+            fromName: data.fromName || data.fromEmail.split('@')[0],
+            type: data.callType || 'video', // Standardize on 'type'
+            roomID: data.roomID,
+            timestamp: data.timestamp || Date.now()
+          });
+          if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+        }
+      };
+
+      socket.onclose = () => {
+        console.log("Signaling Server Disconnected. Retrying...");
+        setTimeout(connectWS, 3000);
+      };
+    };
+
+    connectWS();
+    return () => {
+      if (socketRef.current) socketRef.current.close();
+    };
+  }, [currentUser]);
 
   // --- REAL-TIME DISCOVERY & SYNC ---
   useEffect(() => {
@@ -100,20 +168,23 @@ function App() {
       }
     });
 
-    // 2. SIGNALING: Listen for Call Signals (Video/Audio)
+    // 2. FALLBACK SIGNALING (Gun.js): For reliability if WS is slow
     gun.get(`carelinq_signal_${mySafeEmail}`).on((data) => {
-      if (data && data.fromEmail && (Date.now() - data.timestamp < 20000)) {
-        // Only alert if we haven't already shown this specific call
-        if (!incomingCall || incomingCall.timestamp !== data.timestamp) {
-          setIncomingCall(data);
-          // Native browser alert to grab attention
-          setTimeout(() => {
-            alert(`🏥 ALERT: Incoming Secure ${data.type.toUpperCase()} Consult from ${data.fromName || data.fromEmail}`);
-          }, 100);
+      if (data && data.fromEmail && (Date.now() - data.timestamp < 15000)) {
+        if (!incomingCall && !isCalling) {
+          console.log("🏥 Incoming Fallback (Gun) Signal Received:", data);
+          setIncomingCall({
+            fromEmail: data.fromEmail,
+            fromName: data.fromName || data.fromEmail.split('@')[0],
+            type: data.type || 'video',
+            roomID: data.roomID,
+            timestamp: data.timestamp
+          });
+          if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
         }
       }
     });
-  }, [currentUser]);
+  }, [currentUser, incomingCall, isCalling]);
 
   // 3. MESSAGING: Listen for real-time messages in active chats
   useEffect(() => {
@@ -172,7 +243,19 @@ function App() {
     const roomID = `carelinq_sig_v5_${participants[0].replace(/[@.]/g, '_')}_${participants[1].replace(/[@.]/g, '_')}`;
     const targetSafeEmail = activeChat.email.replace(/[@.]/g, '_');
 
-    // 1. SIGNAL the other user (This triggers the incoming call popup)
+    // 1. SIGNAL the other user via WebSocket
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({
+        type: 'initiate-call',
+        targetEmail: activeChat.email,
+        fromEmail: currentUser.email,
+        fromName: currentUser.name,
+        callType: type,
+        roomID
+      }));
+    }
+
+    // 1b. FALLBACK: Signal via Gun.js too
     gun.get(`carelinq_signal_${targetSafeEmail}`).put({ 
         fromEmail: currentUser.email, 
         fromName: currentUser.name, 
@@ -181,11 +264,32 @@ function App() {
         timestamp: Date.now() 
     });
 
+    setActiveRoomID(roomID);
+
     // 2. Post a direct invite in the chat
     onSendMessage(activeChat.id, `JOIN_CALL_REQUEST:${type.toUpperCase()}`, true);
     
     // 3. Optional: Background Notification
     console.log(`Call initiated to ${activeChat.email}. Signaling via P2P relay...`);
+
+    // LOG CONSULT REQUEST TO MONGODB
+    try {
+      fetch('http://localhost:5000/api/medical/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doctor_email: currentUser.role === 'doctor' ? currentUser.email : activeChat.email,
+          patient_email: currentUser.role === 'patient' ? currentUser.email : activeChat.email,
+          consult_request_details: {
+            type,
+            initiated_by: currentUser.email,
+            status: 'Requested'
+          }
+        })
+      });
+    } catch (err) {
+      console.error("Consult log error:", err);
+    }
 
     setCallType(type);
     setIsCalling(true);
@@ -204,20 +308,34 @@ function App() {
     setActiveChat(targetChat);
     setShowChatWindowOnMobile(true);
     setCallType(incomingCall.type);
+    setActiveRoomID(incomingCall.roomID);
     setIsCalling(true);
     setIncomingCall(null);
   };
 
-  if (!currentUser) return <Login onLogin={(email, role) => setCurrentUser({ 
-    email, 
-    name: email.split('@')[0], 
-    id: email.replace(/[@.]/g, '_'), 
-    role: role || 'doctor',
-    avatar: `https://i.pravatar.cc/150?u=${email.replace(/[@.]/g, '_')}` 
-  })} />;
+  if (!currentUser) return <Login onLogin={handleLogin} />;
 
   return (
     <div className={`app-container carelinq-theme ${showChatWindowOnMobile ? 'chat-window-active' : ''}`}>
+      {/* Unified Incoming Call Modal */}
+      <AnimatePresence>
+        {incomingCall && !isCalling && (
+          <motion.div className="incoming-call-modal" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
+             <div className="modal-inner">
+                <div className="ringing-avatar">
+                   <img src={`https://i.pravatar.cc/150?u=${incomingCall.fromEmail?.replace(/[@.]/g, '_')}`} alt="caller" />
+                   <div className="pulse-ring"></div>
+                </div>
+                <h2>{incomingCall.fromName || 'Healthcare Provider'}</h2>
+                <p>Incoming Secure {incomingCall.type || 'Consult'} Request</p>
+                <div className="modal-actions">
+                  <button className="btn-decline" onClick={() => setIncomingCall(null)}><X size={24} /></button>
+                  <button className="btn-accept" onClick={handleAcceptCall}><Phone size={24} /></button>
+                </div>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showStatus && (
@@ -231,7 +349,7 @@ function App() {
             <div className="status-item">
               <Stethoscope size={16} color="var(--med-primary)" />
               <span>{currentUser.role === 'doctor' ? 'Oncology & Dermatology Specialist' : 'Patient'}: <strong>{currentUser.email}</strong> <small>({APP_VERSION})</small></span>
-              <button className="logout-btn" onClick={() => setCurrentUser(null)}>Restart Session</button>
+              <button className="logout-btn" onClick={handleLogout}>Restart Session</button>
             </div>
           </motion.div>
         )}
@@ -268,19 +386,19 @@ function App() {
           <div className={`placeholder-view tab-${activeTab}`}>
             <div className="placeholder-content">
               {activeTab === 'activity' && (
-                <ActivityDashboard role={currentUser.role} />
+                <ActivityDashboard role={currentUser.role} user={currentUser} />
               )}
               {activeTab === 'patients' && (
                 <PatientDirectory />
               )}
               {activeTab === 'records' && (
-                <MedicalRecords />
+                <MedicalRecords user={currentUser} />
               )}
               {activeTab === 'telehealth' && (
                 <TelehealthDashboard onStartCall={handleStartCall} role={currentUser.role} />
               )}
               {activeTab === 'settings' && (
-                <UserProfile user={currentUser} onLogout={() => setCurrentUser(null)} />
+                <UserProfile user={currentUser} onLogout={handleLogout} />
               )}
               {activeTab === 'more' && (
                 <>
@@ -294,26 +412,15 @@ function App() {
       </div>
 
       <AnimatePresence>
-        {incomingCall && !isCalling && (
-          <motion.div className="incoming-call-modal" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
-             <div className="modal-inner">
-                <div className="ringing-avatar">
-                   <img src={`https://i.pravatar.cc/150?u=${incomingCall.fromEmail.replace(/[@.]/g, '_')}`} alt="caller" />
-                   <div className="pulse-ring"></div>
-                </div>
-                <h2>{incomingCall.fromName}</h2>
-                <p>Incoming Secure {incomingCall.type} Consult</p>
-                <div className="modal-actions">
-                  <button className="btn-decline" onClick={() => setIncomingCall(null)}><X size={24} /></button>
-                  <button className="btn-accept" onClick={handleAcceptCall}><Phone size={24} /></button>
-                </div>
-             </div>
-          </motion.div>
+        {isCalling && (
+          <VideoCall 
+            chat={activeChat} 
+            currentUser={currentUser} 
+            sessionMessages={activeChat ? (messages[activeChat.id] || []) : []}
+            onEndCall={() => setIsCalling(false)} 
+            roomID={activeRoomID}
+          />
         )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isCalling && <VideoCall chat={activeChat} currentUser={currentUser} onEndCall={() => setIsCalling(false)} />}
       </AnimatePresence>
       {currentUser && currentUser.role === 'patient' && (
         <>

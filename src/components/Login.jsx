@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, ArrowRight, ShieldCheck, Lock, Activity, ChevronRight, User, Stethoscope, AlertCircle } from 'lucide-react';
+import { Mail, ArrowRight, ShieldCheck, Lock, Activity, ChevronRight, User, Stethoscope, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Login.css';
 
@@ -9,24 +9,62 @@ const Login = ({ onLogin }) => {
   const [role, setRole] = useState('doctor'); // 'doctor' or 'patient'
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
     
-    // Credentials logic
-    const isValidDoctor = role === 'doctor' && email === 'doctor@gmail.com' && password === 'test@123';
-    const isValidPatient = role === 'patient' && email === 'patient@gmail.com' && password === 'test@123';
+    const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedPassword = password.trim();
+    
+    try {
+      // In a real scenario, you would point this to your backend API URL
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: sanitizedEmail,
+          password: sanitizedPassword,
+          role: role
+        }),
+      });
 
-    if (isValidDoctor || isValidPatient) {
-      setIsLoading(true);
-      // Simulate a small delay for premium feel
-      setTimeout(() => {
-        onLogin(email.trim(), role);
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Successful login
+        // Log activity to MongoDB
+        try {
+          await fetch('http://localhost:5000/api/timestamp/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_email: sanitizedEmail,
+              action: `User logged in as ${role}`
+            })
+          });
+        } catch (logErr) {
+          console.error("Failed to log activity:", logErr);
+        }
+
+        setTimeout(() => {
+          onLogin(data.user); // Using the user object from backend
+          setIsLoading(false);
+        }, 800);
+      } else {
+        setError(data.message || 'Invalid credentials. Please try again.');
         setIsLoading(false);
-      }, 1000);
-    } else {
-      setError('Invalid credentials for selected role. Please check and try again.');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      // FALLBACK FOR DEMO: If backend isn't running yet, we can keep the old local logic or show error
+      // Letting user know they need the backend
+      setError('Connection to security server failed. Ensure backend is running.');
+      setIsLoading(false);
     }
   };
 
@@ -119,7 +157,7 @@ const Login = ({ onLogin }) => {
               <Mail size={18} className="input-icon" />
               <input 
                 type="email" 
-                placeholder={role === 'doctor' ? 'doctor@hospital.com' : 'patient@email.com'} 
+                placeholder={role === 'doctor' ? 'doctor@gmail.com' : 'patient@gmail.com'} 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -139,13 +177,21 @@ const Login = ({ onLogin }) => {
             <div className="input-group">
               <Lock size={18} className="input-icon" />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 placeholder="••••••••" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
                 required
               />
+              <button 
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </motion.div>
 
@@ -199,6 +245,10 @@ const Login = ({ onLogin }) => {
           <div className="trust-badge">
             <ShieldCheck size={16} />
             <span>HIPAA-Compliant Protocol Active</span>
+          </div>
+          <ChevronRight size={14} color="#334155" />
+          <div className="demo-hint" title="Demo: doctor@gmail.com / patient@gmail.com (pass: test@123)">
+             Credentials Hint
           </div>
           <ChevronRight size={14} color="#334155" />
           <span>v2.4.1</span>

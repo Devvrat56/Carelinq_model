@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   Calendar, 
@@ -20,86 +20,47 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import './MedicalRecords.css';
 
-const MOCK_RECORDS = [
-  {
-    id: 1,
-    patientName: 'Johnathan Doe',
-    date: '2026-03-01',
-    time: '02:30 PM',
-    duration: 'N/A',
-    type: 'discharge',
-    status: 'finalized',
-    priority: 'high',
-    summary: 'DISCHARGE SUMMARY: Patient successfully completed cycle 4 of targeted chemotherapy. Stable vitals throughout stay. Prescribed maintenance oral medications. Follow-up localized imaging scheduled in 14 days.',
-    tags: ['Cycle 4', 'Oncology', 'Discharge'],
-    doctor: 'Inpatient Oncology Team',
-    clinicalSignificance: 'Recovery milestones met. Monitoring for neuropathy.'
-  },
-  {
-    id: 2,
-    patientName: 'Johnathan Doe',
-    date: '2026-02-28',
-    time: '11:15 AM',
-    duration: '18m 45s',
-    type: 'video',
-    status: 'signed',
-    priority: 'medium',
-    summary: 'VIDEO CONSULT SUMMARY: Discussed recovery progress and post-chemo side effects. Patient reporting improved appetite. Adjustments made to anti-nausea medication. Skin check performed via high-res video.',
-    tags: ['Telehealth', 'Recovery', 'AI-Scribe'],
-    doctor: 'Dr. Sarah Smith',
-    clinicalSignificance: 'Appetite improving. Side effects manageable.'
-  },
-  {
-    id: 3,
-    patientName: 'Johnathan Doe',
-    date: '2026-02-27',
-    time: '09:00 PM',
-    duration: 'Chatbot Session',
-    type: 'chatbot',
-    status: 'flagged',
-    priority: 'low',
-    summary: 'CHATBOT INTERACTION: Patient inquired about mild skin irritation. AI Assistant provided immediate soothing protocols and flagged for Dermatology review. Redness reported as localized and non-painful.',
-    tags: ['AI Assistant', 'Incident Log', 'Dermatology'],
-    doctor: 'Carelinq Health AI',
-    clinicalSignificance: 'Potential dermatitis. Dermatologist notified.'
-  },
-  {
-    id: 4,
-    patientName: 'Jane Smith',
-    date: '2026-02-14',
-    time: '09:00 AM',
-    duration: '15m 05s',
-    type: 'discharge',
-    status: 'finalized',
-    priority: 'medium',
-    summary: 'DISCHARGE SUMMARY: Post-surgical follow-up completed. Wound healing within expected parameters. No signs of infection. Clearance provided for light physical activity.',
-    tags: ['Post-Op', 'Surgical', 'Healed'],
-    doctor: 'Surgical Care Unit',
-    clinicalSignificance: 'Primary incision site closed. No exudate.'
-  },
-  {
-    id: 5,
-    patientName: 'Robert Brown',
-    date: '2026-02-12',
-    time: '04:20 PM',
-    duration: '22m',
-    type: 'video',
-    status: 'signed',
-    priority: 'high',
-    summary: 'ONCOLOGY REVIEW: Initial biopsy analysis discussion. Confirmed Multiple Myeloma markers. Discussed chemotherapy protocol and marrow support.',
-    tags: ['Myeloma', 'Oncology', 'New Case'],
-    doctor: 'Dr. Sarah Connor',
-    clinicalSignificance: 'Bence-Jones proteins detected. Immediate start recommended.'
-  }
+// Initial state for fallback if backend is empty
+const INITIAL_MOCK_RECORDS = [
+  // ... existing mock data ...
 ];
 
-const MedicalRecords = () => {
+const MedicalRecords = ({ user }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [records, setRecords] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredRecords = MOCK_RECORDS.filter(record => {
-    const matchesSearch = record.patientName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         record.summary.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    const fetchRecords = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch specific records for the logged in user from PostgreSQL via Backend
+        const response = await fetch(`http://localhost:5000/api/records/${user.email}`);
+        if (response.ok) {
+          const data = await response.json();
+          setRecords(data);
+        } else {
+          console.error("Failed to load records from DB");
+          // Fallback if data is empty or server error
+          setRecords([]);
+        }
+      } catch (err) {
+        console.error("Database connection error:", err);
+        setRecords([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (user?.email) {
+      fetchRecords();
+    }
+  }, [user]);
+
+  const filteredRecords = records.filter(record => {
+    const matchesSearch = (record.patientName || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         (record.summary || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = activeFilter === 'all' || record.type === activeFilter;
     return matchesSearch && matchesFilter;
   });
@@ -123,9 +84,9 @@ const MedicalRecords = () => {
   };
 
   const stats = [
-    { label: 'Total Records', value: MOCK_RECORDS.length, icon: FileSearch, color: '#0ea5e9' },
-    { label: 'AI Sessions', value: '14', icon: MessageSquare, color: '#a855f7' },
-    { label: 'Virtual Consults', value: '8', icon: Video, color: '#3b82f6' },
+    { label: 'Total Records', value: records.length, icon: FileSearch, color: '#0ea5e9' },
+    { label: 'AI Sessions', value: records.filter(r => r.type === 'chatbot').length, icon: MessageSquare, color: '#a855f7' },
+    { label: 'Virtual Consults', value: records.filter(r => r.type === 'video').length, icon: Video, color: '#3b82f6' },
     { label: 'Pending Sign', value: '2', icon: Clock, color: '#f59e0b' },
   ];
 

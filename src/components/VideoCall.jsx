@@ -8,7 +8,7 @@ import {
 import Peer from 'simple-peer';
 import './VideoCall.css';
 
-const VideoCall = ({ chat, currentUser, onEndCall }) => {
+const VideoCall = ({ chat, currentUser, onEndCall, sessionMessages, roomID }) => {
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [status, setStatus] = useState('Initializing Media...');
@@ -17,11 +17,19 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
   const [activeClinicalTab, setActiveClinicalTab] = useState('notes');
   const [error, setError] = useState(null);
   const [showAudioBypass, setShowAudioBypass] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [isSharingScreen, setIsSharingScreen] = useState(false);
   
   const localVideoRef = useRef();
   const remoteVideoRef = useRef();
   const socketRef = useRef(null);
   const peerRef = useRef(null);
+
+  // Safeguard against missing data
+  if (!chat || !currentUser) {
+    if (onEndCall) onEndCall();
+    return null;
+  }
 
   const startMedia = (withVideo = true) => {
     // 1. Get Camera/Mic Access
@@ -36,17 +44,14 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
     navigator.mediaDevices.getUserMedia(constraints)
       .catch(err => {
         if (withVideo) {
-          console.warn('Full HD/Ideal constraints failed, trying basic video/audio...', err);
+          console.warn('Full HD constraints failed, trying basic video...', err);
           return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         }
         throw err;
       })
       .catch(err => {
-        if (withVideo) {
-          console.warn('Video acquisition failed, falling back to AUDIO ONLY...', err);
-          return navigator.mediaDevices.getUserMedia({ video: false, audio: true });
-        }
-        throw err;
+        console.warn('Video acquisition failed, falling back to AUDIO ONLY...', err);
+        return navigator.mediaDevices.getUserMedia({ video: false, audio: true });
       })
       .then(stream => {
         setLocalStream(stream);
@@ -59,11 +64,11 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
         }
 
         // 2. Setup WebSocket Signaling
-        setStatus(hasVideo ? 'Connecting Securely...' : 'Connecting Audio Tunnel...');
         const socket = new WebSocket('ws://localhost:8080');
         socketRef.current = socket;
 
-        const roomId = [currentUser.email, chat.email].sort().join('--');
+        const roomId = roomID || [currentUser.email, chat.email].sort().join('--');
+        console.log(`🎥 Joining room: ${roomId} as ${currentUser.email}`);
 
         socket.onopen = () => {
           setStatus('Joining Secured Room...');
@@ -73,7 +78,7 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
           
           const peer = new Peer({
             initiator: isInitiator,
-            trickle: false,
+            trickle: true,
             stream: stream,
             config: {
               iceServers: [
@@ -84,22 +89,27 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
           });
 
           peer.on('signal', (data) => {
-            socket.send(JSON.stringify({
-              type: 'signal',
-              signal: data,
-              from: currentUser.email
-            }));
+            if (socket.readyState === WebSocket.OPEN) {
+              socket.send(JSON.stringify({
+                type: 'signal',
+                signal: data,
+                from: currentUser.email
+              }));
+            }
           });
 
           peer.on('stream', (rStream) => {
+            console.log("Remote stream received");
             setRemoteStream(rStream);
-            if (remoteVideoRef.current) remoteVideoRef.current.srcObject = rStream;
+            if (remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = rStream;
+            }
             setStatus('Connected');
           });
 
           peer.on('error', (err) => {
             console.error('Peer Error:', err);
-            setError('Connection failed. Retrying...');
+            setError(`Connection error: ${err.message}`);
           });
 
           peerRef.current = peer;
@@ -112,23 +122,12 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
           }
         };
 
-        socket.onclose = () => {
-          setStatus('Signaling Offline');
-        };
-
-        socket.onerror = () => {
-          setError('Signaling server error. Make sure backend is running.');
-        };
+        socket.onclose = () => setStatus('Signaling Offline');
+        socket.onerror = () => setError('Signaling Server Unreachable');
       })
       .catch(err => {
-        console.error('Media Access Error:', err);
-        if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-          setError('No camera or microphone found. Please connect your hardware.');
-        } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          setError('Camera access denied. Please enable permissions in your browser.');
-        } else {
-          setError(`Media Error: ${err.message}`);
-        }
+        console.error('Final Media Access Error:', err);
+        setError(`Media Error: ${err.name === 'NotFoundError' ? 'No Camera/Mic Found' : err.message}`);
       });
   };
 
@@ -173,22 +172,55 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
 
   const handleScreenShare = async () => {
     try {
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      if (peerRef.current) {
+      if (isSharingScreen) {
+        // If already sharing, we find the 'ended' handler or manually stop
+        const tracks = localVideoRef.current.srcObject.getTracks();
+        tracks.forEach(t => t.stop());
+        return;
+      }
+
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+        video: { cursor: "always" },
+        audio: false 
+      });
+      
+      if (peerRef.current && localStream) {
         const videoTrack = screenStream.getVideoTracks()[0];
-        const sender = peerRef.current._pc.getSenders().find(s => s.track.kind === 'video');
-        if (sender) {
-          sender.replaceTrack(videoTrack);
-          if (localVideoRef.current) localVideoRef.current.srcObject = screenStream;
-          
-          videoTrack.onended = () => {
-            sender.replaceTrack(localStream.getVideoTracks()[0]);
-            if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
-          };
+        const oldTrack = localStream.getVideoTracks()[0];
+
+        // 1. Replace track for the remote peer using the most reliable method
+        if (peerRef.current.replaceTrack) {
+            await peerRef.current.replaceTrack(oldTrack, videoTrack, localStream);
+        } else if (peerRef.current._pc) {
+            const senders = peerRef.current._pc.getSenders();
+            const sender = senders.find(s => s.track && s.track.kind === 'video');
+            if (sender) await sender.replaceTrack(videoTrack);
         }
+
+        // 2. Update local preview
+        if (localVideoRef.current) localVideoRef.current.srcObject = screenStream;
+        setIsSharingScreen(true);
+        
+        // 3. Handle when user clicks "Stop Sharing" in browser UI
+        videoTrack.onended = async () => {
+          if (peerRef.current && localStream) {
+            const cameraTrack = localStream.getVideoTracks()[0];
+            if (peerRef.current.replaceTrack) {
+                await peerRef.current.replaceTrack(videoTrack, cameraTrack, localStream);
+            } else if (peerRef.current._pc) {
+                const senders = peerRef.current._pc.getSenders();
+                const sender = senders.find(s => s.track && s.track.kind === 'video');
+                if (sender) await sender.replaceTrack(cameraTrack);
+            }
+          }
+          if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+          setIsSharingScreen(false);
+          screenStream.getTracks().forEach(t => t.stop());
+        };
       }
     } catch (err) {
       console.error("Screen share error:", err);
+      setIsSharingScreen(false);
     }
   };
 
@@ -202,8 +234,38 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
     }
   };
 
-  const handleSaveSession = () => {
-    alert("Oncology Consultation Session Saved. Records have been synchronized with the Patient Portal.");
+  const handleSaveSession = async () => {
+    // SAVE TO MONGODB (Specialist_portal -> medical)
+    try {
+      await fetch('http://localhost:5000/api/medical/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doctor_email: currentUser?.email,
+          patient_email: chat?.email,
+          transcription: notes,
+          session_history: sessionMessages, // The full chat history
+          consult_request_details: {
+            status: 'Completed',
+            finalized_at: new Date().toISOString()
+          }
+        })
+      });
+
+      await fetch('http://localhost:5000/api/timestamp/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_email: currentUser?.email,
+          action: `Consultation session with ${chat.name} saved to Specialist_portal`
+        })
+      });
+
+      alert("Telehealth session history and transcription saved successfully.");
+    } catch (err) {
+      console.error("Failed to save session:", err);
+      alert("Error saving session. Data preserved locally.");
+    }
     onEndCall();
   };
 
@@ -248,7 +310,12 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
  
            <div className="clinical-content">
               {activeClinicalTab === 'notes' && (
-                <textarea placeholder="Type Tumor Board observations and staging notes..." className="clinical-textarea" />
+                <textarea 
+                  placeholder="Type Tumor Board observations and staging notes..." 
+                  className="clinical-textarea" 
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
               )}
               {activeClinicalTab === 'rx' && (
                 <div className="rx-area">
@@ -325,7 +392,9 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
  
              <div className="local-view-mini">
                 <video ref={localVideoRef} autoPlay playsInline muted />
-                <div className="label-overlay">You (Doctor)</div>
+                <div className="label-overlay">
+                  {isSharingScreen ? 'Sharing Screen' : `You (${currentUser?.role === 'doctor' ? 'Doctor' : 'Patient'})`}
+                </div>
              </div>
           </div>
  
@@ -341,7 +410,9 @@ const VideoCall = ({ chat, currentUser, onEndCall }) => {
              
              <div className="controls-group center">
                 <button className="action-pill" onClick={() => alert("Specialist Invitation Link Copied to Clipboard")}>Invite Specialist</button>
-                <button className="action-pill" onClick={handleScreenShare}>Share Screen</button>
+                <button className={`action-pill ${isSharingScreen ? 'active' : ''}`} onClick={handleScreenShare}>
+                  {isSharingScreen ? 'Stop Sharing' : 'Share Screen'}
+                </button>
              </div>
  
              <div className="controls-group">

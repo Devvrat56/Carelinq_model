@@ -17,13 +17,36 @@ import {
   Smartphone,
   ShieldCheck,
   Droplet,
-  MapPin
+  MapPin,
+  Heart,
+  Wind
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './ActivityDashboard.css';
 
-const ActivityDashboard = ({ role }) => {
+const ActivityDashboard = ({ role, user }) => {
   const isDoctor = role === 'doctor';
+  const [healthStats, setHealthStats] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(!isDoctor);
+
+  React.useEffect(() => {
+    if (!isDoctor && user?.email) {
+      const fetchHealth = async () => {
+        try {
+          const response = await fetch(`http://localhost:5000/api/health-status/${user.email}`);
+          if (response.ok) {
+            const data = await response.json();
+            setHealthStats(data);
+          }
+        } catch (err) {
+          console.error("Health fetch error:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchHealth();
+    }
+  }, [user, isDoctor]);
 
   const healthData = [
     { day: 'Mon', value: 65 },
@@ -193,10 +216,10 @@ const ActivityDashboard = ({ role }) => {
       <div className="activity-sidebar">
         <div className="side-profile-card">
           <div className="side-avatar-box">
-             <img src="https://i.pravatar.cc/150?u=johndoe" alt="Me" />
+             <img src={user?.avatar || "https://i.pravatar.cc/150?u=johndoe"} alt="Me" />
              <div className="side-status-dot online"></div>
           </div>
-          <h2>Johnathan Doe</h2>
+          <h2>{user?.name || "Patient"}</h2>
           <span className="side-id-tag">Patient ID: #CL-1004 • Stable</span>
           
           <div className="care-rating">
@@ -211,14 +234,14 @@ const ActivityDashboard = ({ role }) => {
               <Droplet size={14} className="text-blue" />
               <div>
                  <label>Hydration</label>
-                 <span>2.5L Target • 1.8L Done</span>
+                 <span>{healthStats?.hydration_target || 2.5}L Target • {healthStats?.hydration_done || 0}L Done</span>
               </div>
            </div>
            <div className="s-detail-item wellness">
               <Activity size={14} className="text-orange" />
               <div>
                  <label>Daily Activity</label>
-                 <span>8,000 Steps Target</span>
+                 <span>{healthStats?.steps || 0} Steps Logged</span>
               </div>
            </div>
            <div className="s-detail-item wellness">
@@ -248,28 +271,28 @@ const ActivityDashboard = ({ role }) => {
              <Heart size={20} />
              <div className="v-strip-info">
                 <span className="v-lbl">Heart Rate</span>
-                <span className="v-val">72 <small>BPM</small></span>
+                <span className="v-val">{healthStats?.heart_rate || '--'} <small>BPM</small></span>
              </div>
           </div>
           <div className="v-strip-box oxygen-p">
              <Wind size={20} />
              <div className="v-strip-info">
                 <span className="v-lbl">SpO2</span>
-                <span className="v-val">98 <small>%</small></span>
+                <span className="v-val">{healthStats?.oxygen_level || '--'} <small>%</small></span>
              </div>
           </div>
           <div className="v-strip-box steps-p">
              <Activity size={20} />
              <div className="v-strip-info">
                 <span className="v-lbl">Live Steps</span>
-                <span className="v-val">8,432 <small>Steps</small></span>
+                <span className="v-val">{healthStats?.steps || '--'} <small>Steps</small></span>
              </div>
           </div>
           <div className="v-strip-box mood-p">
              <Award size={20} />
              <div className="v-strip-info">
                 <span className="v-lbl">Recovery</span>
-                <span className="v-val">94 <small>%</small></span>
+                <span className="v-val">{healthStats?.recovery_progress || '--'} <small>%</small></span>
              </div>
           </div>
         </div>

@@ -50,15 +50,31 @@ const AIChatbot = ({ isOpen, onClose, user }) => {
     setIsTyping(true);
 
     // Simulate AI response
-    setTimeout(() => {
+    setTimeout(async () => {
+      const botResponse = getAIResponse(input);
       const botMsg = {
         id: Date.now() + 1,
         type: 'bot',
-        text: getAIResponse(input),
+        text: botResponse,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, botMsg]);
       setIsTyping(false);
+
+      // SAVE TO MONGODB
+      try {
+        await fetch('http://localhost:5000/api/chatbot/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_email: user?.email,
+            message: input,
+            response: botResponse
+          })
+        });
+      } catch (err) {
+        console.error("Failed to save conversation:", err);
+      }
     }, 1500);
   };
 

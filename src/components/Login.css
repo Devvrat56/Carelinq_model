@@ -149,9 +149,34 @@
     transition: color 0.3s ease;
 }
 
+.input-group input:focus+.input-icon {
+    color: var(--med-primary);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+}
+
 .input-group input {
     width: 100%;
-    padding: 16px 16px 16px 48px;
+    padding: 16px 48px 16px 48px;
     background: rgba(15, 23, 42, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
@@ -165,10 +190,6 @@
     border-color: var(--med-primary);
     background: rgba(15, 23, 42, 0.8);
     box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
-}
-
-.input-group input:focus+.input-icon {
-    color: var(--med-primary);
 }
 
 .login-btn {
@@ -209,6 +230,17 @@
     color: #64748b;
     font-size: 13px;
     font-weight: 500;
+}
+
+.demo-hint {
+    cursor: help;
+    text-decoration: underline dotted;
+    color: #94a3b8;
+    transition: color 0.3s ease;
+}
+
+.demo-hint:hover {
+    color: var(--med-primary);
 }
 
 .trust-badge {
