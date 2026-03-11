@@ -62,9 +62,7 @@ const Login = ({ onLogin }) => {
       }
     } catch (err) {
       console.error('Login error:', err);
-      // FALLBACK FOR DEMO: If backend isn't running yet, we can keep the old local logic or show error
-      // Letting user know they need the backend
-      setError('Connection to security server failed. Ensure backend is running.');
+      setError(`Security server connection failed at ${API_BASE_URL}. Ensure your backend link is set in Netlify settings.`);
       setIsLoading(false);
     }
   };
