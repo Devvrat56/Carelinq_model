@@ -6,13 +6,13 @@ const WebSocket = require('ws');
 require('dotenv').config();
 
 const app = express();
+const server = require('http').createServer(app);
 const PORT = process.env.PORT || 5000;
-const WS_PORT = 8080;
 
 // --- WEB SOCKET SIGNALING SERVER (For Video Calls) ---
-const wss = new WebSocket.Server({ port: WS_PORT }, () => {
-    console.log(`WebSocket Signaling Server running on ws://localhost:${WS_PORT}`);
-});
+const wss = new WebSocket.Server({ server });
+
+console.log(`Secured Backend & Signaling Server initializing on port ${PORT}`);
 
 const userSockets = new Map(); // email -> socket
 const rooms = new Map(); // roomID -> Set of client sockets
@@ -269,6 +269,6 @@ app.post('/api/timestamp/log', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Backend API Server running on http://localhost:${PORT}`);
+server.listen(PORT, () => {
+    console.log(`Unified Backend & Signaling Server running on port ${PORT}`);
 });
