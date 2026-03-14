@@ -45,7 +45,7 @@ const PatientSummary = ({ user }) => {
 
   const patient = {
     id: 'CL-1004',
-    name: user?.name?.split('@')[0] || 'Patient',
+    name: healthStats?.name || user?.name || user?.email?.split('@')[0] || 'Patient',
     age: 52,
     gender: 'Male',
     email: user?.email,
