@@ -21,23 +21,42 @@ import './PatientSummary.css';
 
 const PatientSummary = ({ user }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [healthStats, setHealthStats] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const doctorName = user?.name || "Dr. Specialist";
 
+  useEffect(() => {
+    const fetchHealth = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/health-status/${user.email}`);
+        if (response.ok) {
+          const data = await response.json();
+          setHealthStats(data);
+        }
+      } catch (err) {
+        console.error("Health fetch error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (user?.email) fetchHealth();
+  }, [user]);
+
   const patient = {
     id: 'CL-1004',
-    name: 'Johnathan Doe',
+    name: user?.name?.split('@')[0] || 'Patient',
     age: 52,
     gender: 'Male',
-    email: 'j.doe@example.com',
+    email: user?.email,
     phone: '+1 234-567-8901',
     status: 'Stable',
     condition: 'Stage 2 Lung Adenocarcinoma',
-    avatar: 'https://i.pravatar.cc/150?u=johndoe',
+    avatar: user?.avatar || 'https://i.pravatar.cc/150?u=johndoe',
     lastVitals: {
-      heartRate: 72,
-      oxygen: 98,
-      steps: 8432,
+      heartRate: healthStats?.heart_rate || 72,
+      oxygen: healthStats?.oxygen_level || 98,
+      steps: healthStats?.steps || 8432,
       temperature: '98.6°F',
       bloodPressure: '120/80',
       glucose: '95 mg/dL'
@@ -54,6 +73,8 @@ const PatientSummary = ({ user }) => {
       { name: 'Ondansetron', dosage: '8mg', frequency: 'As needed for nausea', status: 'As Needed' },
     ]
   };
+
+  if (isLoading) return <div className="loading-summary">Syncing Clinical Data...</div>;
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
