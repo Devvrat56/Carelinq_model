@@ -1,4 +1,4 @@
-let apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+let apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:5000').trim();
 
 // Auto-fix: Prepend https:// if protocol is missing (e.g. "my-app.railway.app" -> "https://my-app.railway.app")
 if (apiBase && !apiBase.startsWith('http') && !apiBase.includes('localhost')) {
