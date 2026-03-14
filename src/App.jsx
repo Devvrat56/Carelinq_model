@@ -394,7 +394,7 @@ function App() {
                 <PatientDirectory />
               )}
               {activeTab === 'summary' && (
-                <PatientSummary />
+                <PatientSummary user={currentUser} />
               )}
               {activeTab === 'records' && (
                 <MedicalRecords user={currentUser} />

@@ -19,8 +19,10 @@ import {
 import { motion } from 'framer-motion';
 import './PatientSummary.css';
 
-const PatientSummary = () => {
+const PatientSummary = ({ user }) => {
   const [activeTab, setActiveTab] = useState('overview');
+
+  const doctorName = user?.name || "Dr. Specialist";
 
   const patient = {
     id: 'CL-1004',
@@ -41,10 +43,10 @@ const PatientSummary = () => {
       glucose: '95 mg/dL'
     },
     history: [
-      { id: 1, event: 'Diagnosis: Stage 2 Lung Adenocarcinoma', date: '2025-05-15', doctor: 'Dr. Sarah Smith' },
-      { id: 2, event: 'Chemo Cycle 1 Completed', date: '2025-07-20', doctor: 'Dr. Sarah Smith' },
+      { id: 1, event: 'Diagnosis: Stage 2 Lung Adenocarcinoma', date: '2025-05-15', doctor: doctorName },
+      { id: 2, event: 'Chemo Cycle 1 Completed', date: '2025-07-20', doctor: doctorName },
       { id: 3, event: 'Follow-up CT Scan (Stable)', date: '2025-11-10', doctor: 'Radiology Team' },
-      { id: 4, event: 'Chemo Cycle 2 Started', date: '2026-02-01', doctor: 'Dr. Sarah Smith' },
+      { id: 4, event: 'Chemo Cycle 2 Started', date: '2026-02-01', doctor: doctorName },
     ],
     medications: [
       { name: 'Cisplatin', dosage: '50mg/m²', frequency: 'Once every 3 weeks', status: 'Active' },
