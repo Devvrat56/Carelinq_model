@@ -23,13 +23,45 @@ import './MedicalRecords.css';
 
 // Initial state for fallback if backend is empty
 const INITIAL_MOCK_RECORDS = [
-  // ... existing mock data ...
+  {
+    id: 'rec_001',
+    type: 'discharge',
+    patientName: 'Johnathan Doe',
+    status: 'signed',
+    summary: 'Patient discharged after successful stage 2 chemotherapy cycle. All vital signs stable. Follow-up scheduled for 2 weeks.',
+    clinicalSignificance: 'High - Post-chemo recovery phase started.',
+    tags: ['Oncology', 'Chemotherapy', 'Discharge'],
+    date: '2026-03-12T10:00:00Z',
+    doctor: 'Dr. Sarah Smith'
+  },
+  {
+    id: 'rec_002',
+    type: 'video',
+    patientName: 'Emily White',
+    status: 'review',
+    summary: 'Virtual dermatological assessment of acute rash on upper torso. Prescribed topical corticosteroids.',
+    clinicalSignificance: 'Medium - Monitoring for allergic reaction.',
+    tags: ['Dermatology', 'Telehealth', 'Rash'],
+    date: '2026-03-13T14:30:00Z',
+    doctor: 'Dr. Sarah Smith'
+  },
+  {
+    id: 'rec_003',
+    type: 'chatbot',
+    patientName: 'Self (AI Assistant)',
+    status: 'stable',
+    summary: 'AI session: Patient queried about potential side effects of immunotherapy and diet restrictions.',
+    clinicalSignificance: 'Routine - Patient education and symptom tracking.',
+    tags: ['AI Assistant', 'Immunotherapy', 'Patient Education'],
+    date: '2026-03-14T08:15:00Z',
+    doctor: 'Carelinq AI'
+  }
 ];
 
 const MedicalRecords = ({ user }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [records, setRecords] = useState([]);
+  const [records, setRecords] = useState(INITIAL_MOCK_RECORDS);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -40,15 +72,15 @@ const MedicalRecords = ({ user }) => {
         const response = await fetch(`${API_BASE_URL}/api/records/${user.email}`);
         if (response.ok) {
           const data = await response.json();
-          setRecords(data);
+          // Merge backend records with mock records for demonstration
+          setRecords(prev => [...data, ...INITIAL_MOCK_RECORDS].filter((v,i,a)=>a.findIndex(t=>(t.id===v.id))===i));
         } else {
           console.error("Failed to load records from DB");
-          // Fallback if data is empty or server error
-          setRecords([]);
+          setRecords(INITIAL_MOCK_RECORDS);
         }
       } catch (err) {
         console.error("Database connection error:", err);
-        setRecords([]);
+        setRecords(INITIAL_MOCK_RECORDS);
       } finally {
         setIsLoading(false);
       }
