@@ -16,6 +16,7 @@ const Sidebar = ({ activeTab, onTabChange, role }) => {
     { icon: Activity, label: 'Activity', id: 'activity' },
     { icon: MessageSquare, label: 'Chat Linq', id: 'consults' },
     { icon: Users, label: 'Patients', id: 'patients' },
+    { icon: ClipboardList, label: 'Patient Summary', id: 'summary' },
     { icon: ClipboardList, label: 'Records', id: 'records' },
     { icon: Video, label: 'Telehealth', id: 'telehealth' },
   ];

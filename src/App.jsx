@@ -9,6 +9,7 @@ import TelehealthDashboard from './components/TelehealthDashboard';
 import MedicalRecords from './components/MedicalRecords';
 import ActivityDashboard from './components/ActivityDashboard';
 import UserProfile from './components/UserProfile';
+import PatientSummary from './components/PatientSummary';
 import AIChatbot from './components/AIChatbot';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Stethoscope, Phone, X, Check, Bell, Mail, RefreshCw, User, Thermometer, FileText, ShieldAlert, Activity, Sparkles } from 'lucide-react';
@@ -391,6 +392,9 @@ function App() {
               )}
               {activeTab === 'patients' && (
                 <PatientDirectory />
+              )}
+              {activeTab === 'summary' && (
+                <PatientSummary />
               )}
               {activeTab === 'records' && (
                 <MedicalRecords user={currentUser} />
