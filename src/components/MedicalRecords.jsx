@@ -70,17 +70,28 @@ const MedicalRecords = ({ user }) => {
       try {
         // Fetch specific records for the logged in user from PostgreSQL via Backend
         const response = await fetch(`${API_BASE_URL}/api/records/${user.email}`);
+        
+        const displayName = user?.name || user?.email?.split('@')[0] || 'Patient';
+        const personalizedMocks = INITIAL_MOCK_RECORDS.map(rec => ({
+          ...rec,
+          patientName: (rec.type === 'chatbot') ? `Self (${displayName})` : displayName
+        }));
+
         if (response.ok) {
           const data = await response.json();
-          // Merge backend records with mock records for demonstration
-          setRecords(prev => [...data, ...INITIAL_MOCK_RECORDS].filter((v,i,a)=>a.findIndex(t=>(t.id===v.id))===i));
+          // Merge backend records with personalized mock records
+          setRecords([...data, ...personalizedMocks].filter((v,i,a)=>a.findIndex(t=>(t.id===v.id))===i));
         } else {
           console.error("Failed to load records from DB");
-          setRecords(INITIAL_MOCK_RECORDS);
+          setRecords(personalizedMocks);
         }
       } catch (err) {
         console.error("Database connection error:", err);
-        setRecords(INITIAL_MOCK_RECORDS);
+        const displayName = user?.name || user?.email?.split('@')[0] || 'Patient';
+        setRecords(INITIAL_MOCK_RECORDS.map(rec => ({
+          ...rec,
+          patientName: (rec.type === 'chatbot') ? `Self (${displayName})` : displayName
+        })));
       } finally {
         setIsLoading(false);
       }
