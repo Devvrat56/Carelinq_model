@@ -21,45 +21,16 @@ const Login = ({ onLogin }) => {
     const sanitizedPassword = password.trim();
     
     try {
-      // In a real scenario, you would point this to your backend API URL
-      const response = await fetch(`${API_BASE_URL}/api/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      setTimeout(() => {
+        const mockUser = {
+          id: sanitizedEmail.replace(/[@.]/g, '_'),
           email: sanitizedEmail,
-          password: sanitizedPassword,
-          role: role
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Successful login
-        // Log activity to MongoDB
-        try {
-          await fetch(`${API_BASE_URL}/api/timestamp/log`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_email: sanitizedEmail,
-              action: `User logged in as ${role}`
-            })
-          });
-        } catch (logErr) {
-          console.error("Failed to log activity:", logErr);
-        }
-
-        setTimeout(() => {
-          onLogin(data.user); // Using the user object from backend
-          setIsLoading(false);
-        }, 800);
-      } else {
-        setError(data.message || 'Invalid credentials. Please try again.');
+          name: role === 'doctor' ? 'Dr. Smith' : 'Patient',
+          role: role,
+        };
+        onLogin(mockUser);
         setIsLoading(false);
-      }
+      }, 800);
     } catch (err) {
       console.error('Login error:', err);
       setError(`Security server connection failed at ${API_BASE_URL}. Ensure your backend link is set in Netlify settings.`);

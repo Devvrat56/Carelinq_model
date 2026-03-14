@@ -62,17 +62,17 @@ const AIChatbot = ({ isOpen, onClose, user }) => {
       setMessages(prev => [...prev, botMsg]);
       setIsTyping(false);
 
-      // SAVE TO MONGODB
+      // SAVE TO MONGODB (Removed backend connection for now)
       try {
-        await fetch(`${API_BASE_URL}/api/chatbot/save`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_email: user?.email,
-            message: input,
-            response: botResponse
-          })
-        });
+        // await fetch(`${API_BASE_URL}/api/chatbot/save`, {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({
+        //     user_email: user?.email,
+        //     message: input,
+        //     response: botResponse
+        //   })
+        // });
       } catch (err) {
         console.error("Failed to save conversation:", err);
       }

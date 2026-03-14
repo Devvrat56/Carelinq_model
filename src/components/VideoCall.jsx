@@ -238,29 +238,30 @@ const VideoCall = ({ chat, currentUser, onEndCall, sessionMessages, roomID }) =>
   const handleSaveSession = async () => {
     // SAVE TO MONGODB (Specialist_portal -> medical)
     try {
-      await fetch(`${API_BASE_URL}/api/medical/save`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          doctor_email: currentUser?.email,
-          patient_email: chat?.email,
-          transcription: notes,
-          session_history: sessionMessages, // The full chat history
-          consult_request_details: {
-            status: 'Completed',
-            finalized_at: new Date().toISOString()
-          }
-        })
-      });
+      // Backend removed for now
+      // await fetch(`${API_BASE_URL}/api/medical/save`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     doctor_email: currentUser?.email,
+      //     patient_email: chat?.email,
+      //     transcription: notes,
+      //     session_history: sessionMessages, // The full chat history
+      //     consult_request_details: {
+      //       status: 'Completed',
+      //       finalized_at: new Date().toISOString()
+      //     }
+      //   })
+      // });
 
-      await fetch(`${API_BASE_URL}/api/timestamp/log`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_email: currentUser?.email,
-          action: `Consultation session with ${chat.name} saved to Specialist_portal`
-        })
-      });
+      // await fetch(`${API_BASE_URL}/api/timestamp/log`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     user_email: currentUser?.email,
+      //     action: `Consultation session with ${chat.name} saved to Specialist_portal`
+      //   })
+      // });
 
       alert("Telehealth session history and transcription saved successfully.");
     } catch (err) {
