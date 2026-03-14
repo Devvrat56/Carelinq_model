@@ -140,7 +140,7 @@ function App() {
       };
     };
 
-    // connectWS(); // Removed backend connection for now
+    connectWS();
     return () => {
       if (socketRef.current) socketRef.current.close();
     };
@@ -275,20 +275,19 @@ function App() {
 
     // LOG CONSULT REQUEST TO MONGODB
     try {
-      // Backend removed for now
-      // fetch(`${API_BASE_URL}/api/medical/save`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     doctor_email: currentUser.role === 'doctor' ? currentUser.email : activeChat.email,
-      //     patient_email: currentUser.role === 'patient' ? currentUser.email : activeChat.email,
-      //     consult_request_details: {
-      //       type,
-      //       initiated_by: currentUser.email,
-      //       status: 'Requested'
-      //     }
-      //   })
-      // });
+      fetch(`${API_BASE_URL}/api/medical/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doctor_email: currentUser.role === 'doctor' ? currentUser.email : activeChat.email,
+          patient_email: currentUser.role === 'patient' ? currentUser.email : activeChat.email,
+          consult_request_details: {
+            type,
+            initiated_by: currentUser.email,
+            status: 'Requested'
+          }
+        })
+      });
     } catch (err) {
       console.error("Consult log error:", err);
     }

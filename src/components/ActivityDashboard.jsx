@@ -34,13 +34,11 @@ const ActivityDashboard = ({ role, user }) => {
     if (!isDoctor && user?.email) {
       const fetchHealth = async () => {
         try {
-          // Backend removed for now
-          // const response = await fetch(`${API_BASE_URL}/api/health-status/${user.email}`);
-          // if (response.ok) {
-          //   const data = await response.json();
-          //   setHealthStats(data);
-          // }
-          setHealthStats({ heart_rate: 72, oxygen_level: 98, steps: 8432, recovery_progress: 85, hydration_target: 2.5, hydration_done: 1.2 });
+          const response = await fetch(`${API_BASE_URL}/api/health-status/${user.email}`);
+          if (response.ok) {
+            const data = await response.json();
+            setHealthStats(data);
+          }
         } catch (err) {
           console.error("Health fetch error:", err);
         } finally {

@@ -36,16 +36,16 @@ const MedicalRecords = ({ user }) => {
     const fetchRecords = async () => {
       setIsLoading(true);
       try {
-        // Backend removed for now
-        // const response = await fetch(`${API_BASE_URL}/api/records/${user.email}`);
-        // if (response.ok) {
-        //   const data = await response.json();
-        //   setRecords(data);
-        // } else {
-        //   console.error("Failed to load records from DB");
-        //   setRecords([]);
-        // }
-        setRecords([]);
+        // Fetch specific records for the logged in user from PostgreSQL via Backend
+        const response = await fetch(`${API_BASE_URL}/api/records/${user.email}`);
+        if (response.ok) {
+          const data = await response.json();
+          setRecords(data);
+        } else {
+          console.error("Failed to load records from DB");
+          // Fallback if data is empty or server error
+          setRecords([]);
+        }
       } catch (err) {
         console.error("Database connection error:", err);
         setRecords([]);
